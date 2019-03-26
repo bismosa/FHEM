@@ -1,5 +1,8 @@
 Dies sind meine Erweiterungen für die Haussteuerung FHEM
 
+Alle aufgeführten Module sind nur als Beispiel zu verstehen. Ich kann nicht für eine Fehlerfreiheit garantieren!
+Vor der Benutzung in einem Produktivsystem müssen diese Module gründlich getestet werden! 
+
 # Alle Module (weitere folgen)
 <b>Auf Updates prüfen (update check):</b>
 
