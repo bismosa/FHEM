@@ -24,4 +24,6 @@ Vor der Benutzung in einem Produktivsystem müssen diese Module gründlich getes
 Dieses Modul such anhand der Koordinaten die aktuellen Blitzerdaten von www.verkehrslage.de heraus und erstellt einen Text, der in FTUI dargestellt werden kann
 Dies ist nur zu demonstrationszwecken gedacht. Bitte die Bedingungen von www.verkehrslage.de beachten
 
+<b>Nur Modul Blitzer installieren:</b>
+
 `update all https://raw.githubusercontent.com/bismosa/FHEM/master/Blitzer/controls_Blitzer.txt`
