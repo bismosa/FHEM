@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 26.03.2019
+# $Id: 98_Blitzer.pm 27.03.2019
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -11,7 +11,9 @@
 #
 #######################################################################################################################################################
 # !!! ToDo´s !!!
-#-
+#- 
+#Ideen:  
+#- 2. Reading ermöglichen? 1x HTML + 1x Text ?
 #######################################################################################################################################################
 
 package main;
@@ -38,7 +40,8 @@ my %VoreinstellungenStandards = (
 	"Stadt" => "number,{OR,suburb,city_district,city,town,village,},building,[Max.],vmax,[km/h],[(],distanceShort,[km],[)],[!!],newline",
 	"Stadt2" => "number,suburb,city_district,city,town,village,building,[Max.],vmax,[km/h],[(],distanceShort,[km],[)],[!!],newline",
 	"Land" => "number,{OR,suburb,city_district,town,village,},road,building,[Max.],vmax,[km/h],[(],distanceShort,[km],[)],[!!],newline",
-	"Land2" => "number,suburb,city_district,town,village,road,building,[Max.],vmax,[km/h],[(],distanceShort,[km],[)],[!!],newline"
+	"Land2" => "number,suburb,city_district,town,village,road,building,[Max.],vmax,[km/h],[(],distanceShort,[km],[)],[!!],newline",
+	"Sprachausgabe" => "[In],{OR,suburb,city_district,town,village,},[an der],road,building,vmax,[km/h],newline",
 );
 
 my @BlitzerPOIS;
@@ -61,6 +64,8 @@ sub Blitzer_Initialize() {
 						."createUpdateReading:0,1 "
 						."httpGetTimeout "
 						."createNoHTML:0,1 "
+						."DontUseOSM:0,1 "
+						."HTML_Before HTML_After HTML_Without Text_Without "
 						."DontUseOSM:0,1 "
 						."MaxSpeedCameras "
 						.$readingFnAttributes;
@@ -90,6 +95,8 @@ sub Blitzer_Define() {
 	$attr{$name}{createNoHTML} = "0" if( not defined( $attr{$name}{createNoHTML} ) );
 	$attr{$name}{createUpdateReading} = "1" if( not defined( $attr{$name}{createUpdateReading} ) );
 	$attr{$name}{room} = "Blitzer" if( not defined( $attr{$name}{room} ) );
+	$attr{$name}{HTML_Before} = "<html> <p align='left'>Aktuelle Blitzer:<br>" if( not defined( $attr{$name}{HTML_Before} ) );
+	$attr{$name}{HTML_Without} = "<html> <p align='left'>Keine Blitzer in der Nähe</p></html>" if( not defined( $attr{$name}{HTML_Without} ) );
 	
 	Blitzer_SetTimer($hash);
 	return undef;
@@ -641,62 +648,74 @@ sub Blitzer_CreateHTML($){
 	}
 	my @Ausgabe=split /,/, AttrVal($name, "Ausgabe", undef);
 	
-	my $html="";
-	if ($createNoHTML == 0){
-		$html = "<html> <p align='left'>";
-	}
-	
-	my $SollAnzeige=0;
 	my $Anzahl = scalar(@BlitzerPOIS);
-	my $IsOR = 0;
-	my $PrevHasValue = 0;
-	for (my $i=0;$i<$Anzahl;$i++) {
-		foreach my $item(@Ausgabe){
-			if (substr($item, 0, 1) eq "["){
-				$html.=substr($item, 1, -1)." ";
-				next;
-			}
-			if ($item eq "number"){
-				$html.=sprintf("%02d", $i)." ";
-				next;
-			}
-			if ($item eq "newline"){
-				if ($createNoHTML == 0){
-					$html.="<br>";
-				} else {
-					$html.=" \n";
+	my $html="";
+	my $htmlVor = AttrVal($name, "HTML_Before", "<html> <p align='left'>");
+	my $htmlNach = AttrVal($name, "HTML_After", "</p></html>");
+	my $htmlWithout = AttrVal($name, "HTML_Without", "<html> <p align='left'>Keine Blitzer in der Nähe.</p></html>");
+	my $TextWithout = AttrVal($name, "Text_Without", "Keine Blitzer in der Nähe.");
+	
+	if ($Anzahl == 0){
+		if ($createNoHTML == 0){
+			$html = $htmlWithout;
+		} else {
+			$html = $TextWithout;
+		}
+		
+	} else {
+		if ($createNoHTML == 0){
+			$html = $htmlVor;
+		}
+		my $SollAnzeige=0;
+		my $IsOR = 0;
+		my $PrevHasValue = 0;
+		for (my $i=0;$i<$Anzahl;$i++) {
+			foreach my $item(@Ausgabe){
+				if (substr($item, 0, 1) eq "["){
+					$html.=substr($item, 1, -1)." ";
+					next;
 				}
-				
-				next;
-			}
+				if ($item eq "number"){
+					$html.=sprintf("%02d", $i)." ";
+					next;
+				}
+				if ($item eq "newline"){
+					if ($createNoHTML == 0){
+						$html.="<br>";
+					} else {
+						$html.=" \n";
+					}
+					
+					next;
+				}
+		
+				#START OR
+				if (substr($item, 0, 1) eq "{"){
+					if (substr($item, 1, 2) eq "OR"){
+						$IsOR = 1;
+					}
+				}
+				#END OR
+				if (substr($item, 0, 1) eq "}"){
+					$IsOR = 0;
+					$PrevHasValue = 0;
+				}
       
-			#START OR
-			if (substr($item, 0, 1) eq "{"){
-				if (substr($item, 1, 2) eq "OR"){
-					$IsOR = 1;
-				}
-			}
-			#END OR
-			if (substr($item, 0, 1) eq "}"){
-				$IsOR = 0;
-				$PrevHasValue = 0;
-			}
-      
-			if (defined $BlitzerPOIS[$i]->{$item}){
-				#Bei einer "OR"-VErknüpfung nichts eintragen, wenn der vorherige einen Wert hatte
-				if ($PrevHasValue == 0){
-					$html.=$BlitzerPOIS[$i]->{$item}." ";
-				}
-				if ($IsOR == 1){
-					$PrevHasValue = 1;
+				if (defined $BlitzerPOIS[$i]->{$item}){
+					#Bei einer "OR"-VErknüpfung nichts eintragen, wenn der vorherige einen Wert hatte
+					if ($PrevHasValue == 0){
+						$html.=$BlitzerPOIS[$i]->{$item}." ";
+					}
+					if ($IsOR == 1){
+						$PrevHasValue = 1;
+					}
 				}
 			}
 		}
+		if ($createNoHTML == 0){
+			$html.=$htmlNach;
+		}
 	}
-	if ($createNoHTML == 0){
-		$html.="</p></html>";
-	}
-	
 	Log3 $name, 4, "Blitzer: html = $html";
 	
 	#Readings nur neu, wenn auch neue Werte!
@@ -941,6 +960,26 @@ sub Blitzer_GetCoordinates($$$$$){
 			<code>attr &lt;Blitzer-Device&gt; httpGetTimeout &lt;5&gt;</code><br>
             Wartezeit (sek.) auf einen HTTP-Get Befehl<br>
     </li>
+	<li><a name="HTML_Before">HTML_Before</a><br>
+			<code>attr &lt;Blitzer-Device&gt; HTML_Before &lt;HTML-Code&gt;</code><br>
+            HTML vor dem Text (Ohne Beschriftung: &lt;html&gt; &lt;p align='left'&gt;)<br>
+			Soll ein Text z.B. "Aktuelle Blitzer:" angezeigt werden, hier z.B.: <br>
+			&lt;html&gt; &lt;p align='left'&gt;Aktuelle Blitzer:&lt;br&gt; (Standardeinstellung)<br>
+    </li>
+	<li><a name="HTML_After">HTML_After</a><br>
+			<code>attr &lt;Blitzer-Device&gt; HTML_After &lt;HTML-Code&gt;</code><br>
+            HTML nach dem Text (Standard: &lt;/p&gt;&lt;/html\&gt;)<br>
+    </li>
+	<li><a name="HTML_Without">HTML_Without</a><br>
+			<code>attr &lt;Blitzer-Device&gt; HTML_Without &lt;HTML-Code&gt;</code><br>
+            HTML, wenn keine Blitzer vorhanden sind (Standard: &lt;html&gt; &lt;p align='left'&gt;Keine Blitzer in der Nähe&lt;/p&gt;&lt;/html\&gt;)<br>
+    </li>	
+	<li><a name="Text_Without">Text_Without</a><br>
+			<code>attr &lt;Blitzer-Device&gt; Text_Without &lt;Text&gt;</code><br>
+            Text, wenn keine Blitzer vorhanden sind (Nur wenn attr createNoHTML) (Standard: Keine Blitzer in der Nähe)<br>
+    </li>	
+	
+	
     
   </ul>
   
