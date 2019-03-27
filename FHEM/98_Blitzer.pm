@@ -992,6 +992,20 @@ sub Blitzer_GetCoordinates($$$$$){
 			Wenn Blitzer vorhanden sind: 1 <br>
       Sind keine Blitzer vorhanden: 0<br>
     </li>
+	<li><a name="NextUpdate">NextUpdate</a><br>
+			Das nächste Update<br>
+    </li>
+	<li><a name="lastUpdate">lastUpdate</a><br>
+			Datum/Uhrzeit der letzten Aktualisierung<br>
+    </li>
+	<li><a name="status">status</a><br>
+			"ok", wenn erfolgreich eingelesen wurde<br>
+			"refreshing", wenn gerade aktualisiert wird<br>
+			"error", wenn das Einlesen fehlerhaft war
+    </li>
+	<li><a name="Error">Error</a><br>
+			Fehlermeldung, wenn vorhanden<br>
+    </li>
   </ul>
     
 </div>
