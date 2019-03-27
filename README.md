@@ -26,4 +26,4 @@ Dies ist nur zu demonstrationszwecken gedacht. Bitte die Bedingungen von www.ver
 
 <b>Nur Modul Blitzer installieren:</b>
 
-`update all https://raw.githubusercontent.com/bismosa/FHEM/master/Blitzer/controls_Blitzer.txt`
+`update all https://raw.githubusercontent.com/bismosa/FHEM/master/controls_Blitzer.txt`
