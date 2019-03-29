@@ -1,5 +1,6 @@
 Module von Bismsoa
 Alle Änderungen siehe: https://github.com/bismosa/FHEM/
+29.03.2019 Kleinere Korrekturen
 29.03.2019 Attribut disable hinzugefügt und Umlaute ersetzen hinzugefügt
 03/2019 Initiales Realease 98_Blitzer.pm
 Hier werden alle Änderungen in allen Modulen aufgeführt.
