@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 27.03.2019
+# $Id: 98_Blitzer.pm 29.03.2019
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -67,6 +67,7 @@ sub Blitzer_Initialize() {
 						."DontUseOSM:0,1 "
 						."HTML_Before HTML_After HTML_Without Text_Without "
 						."DontUseOSM:0,1 "
+						."disable:0,1 "
 						."MaxSpeedCameras "
 						.$readingFnAttributes;
   $hash->{FW_summaryFn}	= "Blitzer_summaryFn";          # displays html instead of status icon in fhemweb room-view
@@ -79,10 +80,19 @@ sub Blitzer_Define() {
 	
 	my @a = split("[ \t][ \t]*", $def);
 	Log3 $name, 4, "Blitzer: Anzahl Argumente = ".int(@a);
+	Log3 $name, 4, "Blitzer: Argument0 = ".$a[0] if(int(@a) > 0);
+	Log3 $name, 4, "Blitzer: Argument1 = ".$a[1] if(int(@a) > 1);
+	Log3 $name, 4, "Blitzer: Argument2 = ".$a[2] if(int(@a) > 2);
+	Log3 $name, 4, "Blitzer: Argument3 = ".$a[3] if(int(@a) > 3);
 	# Argument            				   0	     1      
-	return " wrong syntax: define <name> Blitzer <Interval>" if(int(@a) < 3 || int(@a) > 3);
+	return " wrong syntax: define <name> Blitzer Optional:<Interval>" if(int(@a) < 2 || int(@a) > 3);
 	
-	$hash->{refreshIntervall} = $a[2];
+	if (int(@a) == 3) {
+		$hash->{refreshIntervall} = $a[2];
+	} else {
+		$hash->{refreshIntervall} = 0;
+	}
+	
 	
 	$hash->{STATE} = "Defined";
 	#$modules{Blitzer}{defptr}{$hash->{DEF}} = $hash;
@@ -132,6 +142,18 @@ sub Blitzer_Attr(@) {
 								(not defined($attr{$name}{area_topRight_latitude})) && (not defined($attr{$name}{area_topRight_longitude}))){
 					Blitzer_SetArea($hash);
 				}
+			}
+		}
+		
+		##disabled?
+		if ($attrName eq "disable"){
+			my $disabled = $attrValue;
+			if ($disabled == 1){
+				Blitzer_DelTimer($hash);
+			} else {
+				#hash setzen!
+				$attr{$name}{disable} = 0;
+				Blitzer_Update($hash, undef, undef);
 			}
 		}
 		
@@ -263,18 +285,28 @@ sub Blitzer_summaryFn($$$$){
 sub Blitzer_SetTimer($) {
 	my $hash = shift;
 	my $name = $hash->{NAME};
+	my $disabled = AttrVal($name, "disable", 0);
 	
 	my $refreshIntervall = $hash->{refreshIntervall}; #AttrVal($name, "refreshIntervall", 0);
 	#Timer neu setzen
-	if ($refreshIntervall == 0){
+	if (($refreshIntervall == 0)||($disabled == 1)){
 		RemoveInternalTimer($hash);
-		readingsDelete($hash,"NextUpdate") if !defined ReadingsVal($name,"NextUpdate",undef);
+		readingsDelete($hash,"NextUpdate") if defined ReadingsVal($name,"NextUpdate",undef);
 	} else {
 		my $nextIntervall=gettimeofday() + ($refreshIntervall * 60);
 		RemoveInternalTimer($hash);
 		InternalTimer($nextIntervall, "Blitzer_Update", $hash);
 		readingsSingleUpdate($hash, "NextUpdate", localtime($nextIntervall), 1);
 	}
+}
+
+#####################################
+sub Blitzer_DelTimer($) {
+	my $hash = shift;
+	my $name = $hash->{NAME};
+	
+	RemoveInternalTimer($hash);
+	readingsDelete($hash,"NextUpdate") if defined ReadingsVal($name,"NextUpdate",undef);
 }
 
 #####################################
@@ -716,6 +748,14 @@ sub Blitzer_CreateHTML($){
 			$html.=$htmlNach;
 		}
 	}
+	
+	#Sonderzeichen ersetzen
+	if ($createNoHTML == 0){
+		$html = Blitzer_translateHTML($html);
+	} else {
+		$html = Blitzer_translateTEXT($html);
+	}
+	
 	Log3 $name, 4, "Blitzer: html = $html";
 	
 	#Readings nur neu, wenn auch neue Werte!
@@ -754,6 +794,50 @@ sub Blitzer_GetCoordinates($$$$$){
   Log3 $name, 4, "Koordinaten berechnen lat/lng: $new_lat $new_long";
   my @Values=($new_lat,$new_long);
   return @Values;
+}
+
+sub Blitzer_translateHTML($) {
+	my $text = shift;
+	my %translate = ("ä" => "&auml;", 
+				"Ä" => "&Auml;", 
+				"ü" => "&uuml;", 
+				"Ü" => "&Uuml;", 
+				"ö" => "&ouml;", 
+				"Ö" => "&Ouml;", 
+				"ß" => "&szlig;", 
+				"\x{df}" => "&szlig;", 
+				"\x{c4}" => "&Auml;",
+				"\x{e4}" => "&auml;",
+				"\x{fc}" => "&uuml;", 
+				"\x{dc}" => "&Uuml;", 
+				"\x{f6}" => "&ouml;", 
+				"\x{d6}" => "&Ouml;"
+				);
+	my $keys = join ("|", keys(%translate));
+	$text =~ s/($keys)/$translate{$1}/g;
+	return $text;
+}
+
+sub Blitzer_translateTEXT($) {
+	my $text = shift;
+	my %translate = ("ä" => "&auml;", 
+				"Ä" => "&Auml;", 
+				"ü" => "&uuml;", 
+				"Ü" => "&Uuml;", 
+				"ö" => "&ouml;", 
+				"Ö" => "&Ouml;", 
+				"ß" => "&szlig;", 
+				"\x{df}" => "ß", 
+				"\x{c4}" => "Ä",
+				"\x{e4}" => "ä",
+				"\x{fc}" => "ü", 
+				"\x{dc}" => "Ü", 
+				"\x{f6}" => "ö", 
+				"\x{d6}" => "Ö"
+				);
+	my $keys = join ("|", keys(%translate));
+	$text =~ s/($keys)/$translate{$1}/g;
+	return $text;
 }
 
 # Eval-Rückgabewert für erfolgreiches
@@ -977,6 +1061,10 @@ sub Blitzer_GetCoordinates($$$$$){
 	<li><a name="Text_Without">Text_Without</a><br>
 			<code>attr &lt;Blitzer-Device&gt; Text_Without &lt;Text&gt;</code><br>
             Text, wenn keine Blitzer vorhanden sind (Nur wenn attr createNoHTML) (Standard: Keine Blitzer in der Nähe)<br>
+    </li>
+	<li><a name="disable">disable 0|1</a><br>
+			<code>attr &lt;Blitzer-Device&gt; disable &lt;1|0&gt;</code><br>
+            Kein automatisches aktualisieren<br>
     </li>	
 	
 	
