@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 29.03.2019
+# $Id: 98_Blitzer.pm 29.03.2019 21:40
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -91,6 +91,7 @@ sub Blitzer_Define() {
 		$hash->{refreshIntervall} = $a[2];
 	} else {
 		$hash->{refreshIntervall} = 0;
+		$hash->{DEF} = 0;
 	}
 	
 	
@@ -820,13 +821,14 @@ sub Blitzer_translateHTML($) {
 
 sub Blitzer_translateTEXT($) {
 	my $text = shift;
-	my %translate = ("ä" => "&auml;", 
-				"Ä" => "&Auml;", 
-				"ü" => "&uuml;", 
-				"Ü" => "&Uuml;", 
-				"ö" => "&ouml;", 
-				"Ö" => "&Ouml;", 
-				"ß" => "&szlig;", 
+	my %translate = (
+				"&auml;" => "ä", 
+				"&Auml;" => "Ä", 
+				"&uuml;" => "ü", 
+				"&Uuml;" => "Ü", 
+				"&ouml;" => "ö", 
+				"&Ouml;" => "Ö", 
+				"&szlig;" => "ß", 
 				"\x{df}" => "ß", 
 				"\x{c4}" => "Ä",
 				"\x{e4}" => "ä",
