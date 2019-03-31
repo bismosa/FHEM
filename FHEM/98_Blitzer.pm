@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 29.03.2019 21:40
+# $Id: 98_Blitzer.pm 31.03.2019 20:30
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -14,6 +14,11 @@
 #- 
 #Ideen:  
 #- 2. Reading ermöglichen? 1x HTML + 1x Text ?
+#######################################################################################################################################################
+#Special Thanks:
+#@inoma Danke für die englische Übersetzung der Commandref! 
+#
+#
 #######################################################################################################################################################
 
 package main;
@@ -149,6 +154,7 @@ sub Blitzer_Attr(@) {
 		##disabled?
 		if ($attrName eq "disable"){
 			my $disabled = $attrValue;
+			$disabled = 0 if (not defined $attrValue);
 			if ($disabled == 1){
 				Blitzer_DelTimer($hash);
 			} else {
@@ -855,31 +861,222 @@ sub Blitzer_translateTEXT($) {
 =item summary_DE Blitzer anzeigen
 
 =begin html
-
 <a name="Blitzer"></a>
 <h3>Blitzer</h3>
-<ul>No english documentation here yet, sorry.<br>
-
-	<b>Define</b><br>
+<div>
 	<ul>
-    <code>define &lt;NAME&gt; Blitzer &lt;Interval&gt;</code><br><br>
-    <u>examples:</u>
-		<ul>
-      define &lt;NAME&gt; Interval 30<br>
-    </ul>	
-  </ul><br><br>
+			<p>The module Blitzer shows the current speed cameras in the environment in text form.<br>
+				In addition, you can also view the speed cameras - within a defined radius around a point<br>
+      </p>
+			<h4>Example:</h4>
+			<p><code>define myBlitzer Blitzer 30</code><br></p>
+      
+      <a name="Blitzer_Define"></a>
+        <h4>Define</h4>
+			<p><code>define &lt;NAME&gt; Blitzer 30</code><br>
+        Definition of a speed camera module with a refresh interval of 30 minutes.<br>
+      </p>
+			<p><code>define &lt;NAME&gt; Blitzer 0</code><br>
+        Definition of a speed camera module without automatic update.<br>
+			</p>
+			
+		<h4>Tips:</h4>
+		<p>Tips for the settings:<br>
+		First create the device with the update interval. Then set the attributes for the home coordinates and the radius.<br>
+		The area to be selected is then calculated automatically and entered in the corresponding readings. Can then be adjusted as needed.<br>
+		</p>
+		<p>For a quick test of this module select "_SetDemoValues". Then the speed cameras for Berlin are displayed.</p>
+  </ul>
+  
+  <h4>Set</h4>
+  <ul><a name="Blitzer_Set"></a>
+    <li><a name="Update">Update</a><br>
+      <code>set &lt;Blitzer-Device&gt; Update &lt;Optional:LAT&gt; &lt;Optional:LONG&gt;</code><br>
+            Re-import the Blitzer. <br>
+						If the optional LAT / LONG coordinates are specified, the map section for the center is recalculated with the specified radius<br>
+						and only speed cameras in the radius of the specified coordinates are shown. 
+    </li>
+	<li><a name="Voreinstellung_Ausgabe">Voreinstellung_Ausgabe &lt;Stadt/Land/.../...&gt; ((Preset_output <City / Country / ... / ...>)</a><br>
+      <code>set &lt;Blitzer-Device&gt; Voreinstellung_Ausgabe &lt;Stadtgebiet/Landgebiet/.../...&gt;</code><br>
+						Set the default for the output. Here the attribute "Output" is adjusted.<br>
+						Further settings see attribute "Ausgabe" ("Output") 
+    </li>
+	<li><a name="_SetDemoValues">_SetDemoValues</a><br>
+      <code>set &lt;Blitzer-Device&gt; _SetDemoValues</code><br>
+						Set demo values ​​for the coordinates. (Berlin)<br>
+						If values ​​already exist, they will NOT be overwritten!<br>
+						If necessary, delete the existing readings first.<br>
+    </li>
+	<li><a name="_Berechne_area">_Berechne_area (Calculate_area)</a><br>
+      <code>set &lt;Blitzer-Device&gt; _Berechne_area</code><br>
+						Automatically calculate values ​​for the attributes area _... with the home coordinates and the radius.<br>
+    </li>
 
-	<b>Set</b><br>
-	<ul>N/A</ul><br><br>
-
-	<b>Get</b><br>
-	<ul>N/A</ul><br><br>
-
-	<b>Attribute</b><br>
-	<ul>N/A</ul>
-	<br>
+	</ul>
 	
-</ul>
+  <h4>Get</h4>
+  <ul><a name="Blitzer_Get"></a>
+		<li><a name="allReadings">allReadings</a><br>
+			<code>get &lt;Blitzer-Device&gt; allReadings &lt;Optional:Nummer&gt;</code><br>
+            Returns all readings as a list. If a number is given, only the corresponding entries are shown.<br>
+    </li>
+    <li><a name="hash">hash</a><br>
+			<code>get &lt;Blitzer-Device&gt; hash</code><br>
+            Returns the complete %hash of the device (Debug)<br>
+    </li>
+	</ul>
+  
+  <h4>Attributes</h4>
+  <ul><a name="Blitzer_Attr"></a>
+		<li><a name="Ausgabe">Ausgabe (output)</a><br>
+			<code>attr &lt;Blitzer-Device&gt; Ausgabe &lt;Liste&gt;</code><br>
+            List of values ​​displayed per speed camera.<br><br>
+            <b>Special entries:</b><br>
+            <table>
+             <colgroup> <col width="120"></colgroup>
+              <tr>
+                <td>number</td>
+                <td>numbering</td>
+              </tr>
+              <tr>
+                <td>newline</td>
+                <td>New line</td>
+              </tr>
+              <tr>
+                <td>[Free text]</td>
+                <td>Any text. This is taken over without the brackets.</td>
+              </tr>
+              <tr>
+                <td>distance</td>
+                <td>distance of the speed camera from the home coordinate (line of sight)</td>
+              </tr>
+              <tr>
+                <td>distanceShort</td>
+                <td>Distance of the speed camera from the home coordinate (line of sight), one decimal place</td>
+              </tr>
+              <tr>
+                <td>{OR</td>
+                <td>OR operation. If there is a value, the subsequent ones (up to the curly bracket) are ignored</td>
+              </tr>
+              <tr>
+                <td>}</td>
+                <td>End of the OR operation. Must be mandatory if an OR operation is included.</td>
+              </tr>
+            </table>
+            <br>You can also add as many own entries as you like.<br>
+    </li>
+    <li><a name="home_latitude">home_latitude</a><br>
+			<code>attr &lt;Blitzer-Device&gt; home_latitude 52.00000</code><br>
+            Geographical latitude of the home coordinate or midpoint.<br>
+    </li>
+    <li><a name="home_longitude">home_longitude</a><br>
+			<code>attr &lt;Blitzer-Device&gt; home_longitude 7.00000</code><br>
+            Geographical length of the home coordinate or midpoint.<br>
+    </li>
+    <li><a name="area_bottomLeft_latitude">area_bottomLeft_latitude</a><br>
+			<code>attr &lt;Blitzer-Device&gt; area_bottomLeft_latitude 52.00000</code><br>
+            The area in which the speed cameras are listed. (Bottom left)<br>
+    </li>
+    <li><a name="area_bottomLeft_longitude">area_bottomLeft_longitude</a><br>
+			<code>attr &lt;Blitzer-Device&gt; area_bottomLeft_longitude 7.00000</code><br>
+            The area in which the speed cameras are listed. (Bottom left)<br>
+    </li>
+    <li><a name="area_topRight_latitude">area_topRight_latitude</a><br>
+			<code>attr &lt;Blitzer-Device&gt; area_topRight_latitude 52.00000</code><br>
+            The area in which the speed cameras are listed. (Top right)<br>
+    </li>
+    <li><a name="area_topRight_longitude">area_topRight_longitude</a><br>
+			<code>attr &lt;Blitzer-Device&gt; area_topRight_longitude 7.00000</code><br>
+            The area in which the speed cameras are listed. (Top right)<br>
+    </li>
+    <li><a name="createAllReadings">createAllReadings</a><br>
+			<code>attr &lt;Blitzer-Device&gt; createAllReadings 0|1</code><br>
+            If all readings are needed this must be activated.<br>
+    </li>
+	<li><a name="createUpdateReading">createUpdateReading</a><br>
+			<code>attr &lt;Blitzer-Device&gt; createUpdateReading 0|1</code><br>
+            During the update, a reading (status) "refreshing" is displayed.<br>
+			Once this is done, "ok" will be displayed, and a reading "lastUpdate" with the current date is displayed. <br>
+			If an error occurs, "Error" is displayed.<br>
+    </li>
+    <li><a name="createNoHTML">createNoHTML</a><br>
+			<code>attr &lt;Blitzer-Device&gt; createNoHTML 0|1</code><br>
+            If the output is required in text form, this must be activated.<br>
+    </li>
+	<li><a name="DontUseOSM">DontUseOSM</a><br>
+			<code>attr &lt;Blitzer-Device&gt; DontUseOSM 0|1</code><br>
+            Do not use the location details from OSM (OpenStreetMap). There are then no longer all locations available!<br>
+    </li>
+    <li><a name="radius">radius</a><br>
+			<code>attr &lt;Blitzer-Device&gt; radius &lt;Radius in km&gt;</code><br>
+            Only speed cameras within xx km are displayed. (Set to 999 if not needed)<br>
+    </li>
+	<li><a name="MaxSpeedCameras">MaxSpeedCameras</a><br>
+			<code>attr &lt;Blitzer-Device&gt; MaxSpeedCameras &lt;Anzahl anzuzeigender Blitzer&gt;</code><br>
+            Only the next speed cameras in the corresponding number are displayed. Set to "0" to show all.<br>
+    </li>
+    <li><a name="stateFormat">stateFormat</a><br>
+			<code>attr &lt;Blitzer-Device&gt; stateFormat &lt;irgendwas&gt;</code><br>
+            If no display is required in FHEM, the attribute can be used to override the display.<br>
+    </li>
+	<li><a name="httpGetTimeout">httpGetTimeout</a><br>
+			<code>attr &lt;Blitzer-Device&gt; httpGetTimeout &lt;5&gt;</code><br>
+            Wait (sec.) For an HTTP get command<br>
+    </li>
+	<li><a name="HTML_Before">HTML_Before</a><br>
+			<code>attr &lt;Blitzer-Device&gt; HTML_Before &lt;HTML-Code&gt;</code><br>
+            HTML before the text (without caption: &lt;html&gt; &lt;p align='left'&gt;)<br>
+			If a text is to be e.g. "Current Speed ​​Cameras:" are displayed, here for example:<br>
+			&lt;html&gt; &lt;p align='left'&gt;Current Speed ​​Cameras: &lt;br&gt; (default)<br>
+    </li>
+	<li><a name="HTML_After">HTML_After</a><br>
+			<code>attr &lt;Blitzer-Device&gt; HTML_After &lt;HTML-Code&gt;</code><br>
+            HTML after the text (default: &lt;/p&gt;&lt;/html\&gt;)<br>
+    </li>
+	<li><a name="HTML_Without">HTML_Without</a><br>
+			<code>attr &lt;Blitzer-Device&gt; HTML_Without &lt;HTML-Code&gt;</code><br>
+            HTML if there are no speed cameras (default: &lt;html&gt; &lt;p align='left'&gt;Keine Blitzer in der Nähe&lt;/p&gt;&lt;/html\&gt;)<br>
+    </li>	
+	<li><a name="Text_Without">Text_Without</a><br>
+			<code>attr &lt;Blitzer-Device&gt; Text_Without &lt;Text&gt;</code><br>
+            Text if there are no speed cameras (only if attr createNoHTML) (default: Keine Blitzer in der Nähe)<br>
+    </li>
+	<li><a name="disable">disable 0|1</a><br>
+			<code>attr &lt;Blitzer-Device&gt; disable &lt;1|0&gt;</code><br>
+            No automatic update<br>
+    </li>	
+	
+	
+    
+  </ul>
+  
+  <h4>Readings</h4>
+  <ul><a name="Blitzer_Readings"></a>
+		<li><a name="html">html</a><br>
+			The output of the speed camera as text or HTML<br>
+    </li>
+    <li><a name="Anzeige">Anzeige</a><br>
+			If speed cameras are available: 1 <br>
+			If there are no speed cameras: 0<br>
+    </li>
+	<li><a name="NextUpdate">NextUpdate</a><br>
+			The next update<br>
+    </li>
+	<li><a name="lastUpdate">lastUpdate</a><br>
+			Date / time of the last update<br>
+    </li>
+	<li><a name="status">status</a><br>
+			"ok", if successfully read<br>
+			"refreshing" when refreshing<br>
+			"error" if the reading was faulty<br>
+    </li>
+	<li><a name="Error">Error</a><br>
+			Error message, if available<br>
+    </li>
+  </ul>
+    
+</div>
+
 =end html
 =begin html_DE
 
