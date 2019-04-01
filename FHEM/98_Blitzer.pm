@@ -74,6 +74,7 @@ sub Blitzer_Initialize() {
 						."DontUseOSM:0,1 "
 						."disable:0,1 "
 						."MaxSpeedCameras "
+						."createCountReading:0,1 "
 						.$readingFnAttributes;
   $hash->{FW_summaryFn}	= "Blitzer_summaryFn";          # displays html instead of status icon in fhemweb room-view
 }
@@ -756,6 +757,9 @@ sub Blitzer_CreateHTML($){
 		}
 	}
 	
+	#Anzahl hinzufügen
+	$html =~ s/<Anzahl>/$Anzahl/g;
+	
 	#Sonderzeichen ersetzen
 	if ($createNoHTML == 0){
 		$html = Blitzer_translateHTML($html);
@@ -777,6 +781,10 @@ sub Blitzer_CreateHTML($){
 	if ($updateReading == 1){
 		readingsBulkUpdate($hash, "status", "ok", 1);
 		readingsBulkUpdate($hash, "lastUpdate", localtime(), 1);
+	}
+	my $CountSpeedCameras = AttrVal($name, "createCountReading", 0);
+	if ($CountSpeedCameras == 1){
+		readingsBulkUpdateIfChanged($hash, "count", $Anzahl, 1);
 	}
 	
 	readingsEndUpdate($hash, 1); 		# Notify is done by Dispatch
@@ -1015,6 +1023,10 @@ sub Blitzer_translateTEXT($) {
 			<code>attr &lt;Blitzer-Device&gt; MaxSpeedCameras &lt;Anzahl anzuzeigender Blitzer&gt;</code><br>
             Only the next speed cameras in the corresponding number are displayed. Set to "0" to show all.<br>
     </li>
+	<li><a name="createCountReading">createCountReading</a><br>
+			<code>attr &lt;Blitzer-Device&gt; createCountReading 0|1</code><br>
+            Create reading for number of speed Cameras.<br>
+    </li>
     <li><a name="stateFormat">stateFormat</a><br>
 			<code>attr &lt;Blitzer-Device&gt; stateFormat &lt;irgendwas&gt;</code><br>
             If no display is required in FHEM, the attribute can be used to override the display.<br>
@@ -1028,10 +1040,12 @@ sub Blitzer_translateTEXT($) {
             HTML before the text (without caption: &lt;html&gt; &lt;p align='left'&gt;)<br>
 			If a text is to be e.g. "Current Speed ​​Cameras:" are displayed, here for example:<br>
 			&lt;html&gt; &lt;p align='left'&gt;Current Speed ​​Cameras: &lt;br&gt; (default)<br>
+			&lt;Anzahl&gt; will be replaced with the number of speed cameras.<br>
     </li>
 	<li><a name="HTML_After">HTML_After</a><br>
 			<code>attr &lt;Blitzer-Device&gt; HTML_After &lt;HTML-Code&gt;</code><br>
             HTML after the text (default: &lt;/p&gt;&lt;/html\&gt;)<br>
+			&lt;Anzahl&gt; will be replaced with the number of speed cameras.<br>
     </li>
 	<li><a name="HTML_Without">HTML_Without</a><br>
 			<code>attr &lt;Blitzer-Device&gt; HTML_Without &lt;HTML-Code&gt;</code><br>
@@ -1235,6 +1249,10 @@ sub Blitzer_translateTEXT($) {
 			<code>attr &lt;Blitzer-Device&gt; MaxSpeedCameras &lt;Anzahl anzuzeigender Blitzer&gt;</code><br>
             Es werden nur die nächsten Blitzer in der entsprechenden Anzahl angezeigt. Auf "0" setzen um alle anzuzeigen.<br>
     </li>
+	<li><a name="createCountReading">createCountReading</a><br>
+			<code>attr &lt;Blitzer-Device&gt; createCountReading 0|1</code><br>
+            Es wird ein reading erzeugt, das die Anzahl der gefundenen Blitzer anzeigt.<br>
+    </li>
     <li><a name="stateFormat">stateFormat</a><br>
 			<code>attr &lt;Blitzer-Device&gt; stateFormat &lt;irgendwas&gt;</code><br>
             Wird keine Anzeige in FHEM benötigt, kann über das Attribut die Anzeige übergangen werden.<br>
@@ -1248,10 +1266,12 @@ sub Blitzer_translateTEXT($) {
             HTML vor dem Text (Ohne Beschriftung: &lt;html&gt; &lt;p align='left'&gt;)<br>
 			Soll ein Text z.B. "Aktuelle Blitzer:" angezeigt werden, hier z.B.: <br>
 			&lt;html&gt; &lt;p align='left'&gt;Aktuelle Blitzer:&lt;br&gt; (Standardeinstellung)<br>
+			&lt;Anzahl&gt; wird mit der Anzahl der Blitzer ersetzt.<br>
     </li>
 	<li><a name="HTML_After">HTML_After</a><br>
 			<code>attr &lt;Blitzer-Device&gt; HTML_After &lt;HTML-Code&gt;</code><br>
             HTML nach dem Text (Standard: &lt;/p&gt;&lt;/html\&gt;)<br>
+			&lt;Anzahl&gt; wird mit der Anzahl der Blitzer ersetzt.<br>
     </li>
 	<li><a name="HTML_Without">HTML_Without</a><br>
 			<code>attr &lt;Blitzer-Device&gt; HTML_Without &lt;HTML-Code&gt;</code><br>
