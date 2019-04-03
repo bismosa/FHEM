@@ -1,6 +1,7 @@
 Module von Bismsoa
 Alle Änderungen siehe: https://github.com/bismosa/FHEM/
 -------------------------------------------------------------
+03.04.2019 Optional Update mit neuem Radius
 01.04.2019 Anzahl der Blitzer in der Anzeige + opt. reading
 31.03.2019 Englische Übersetzung hinzugefügt. Danke @inoma !!
 29.03.2019 Kleinere Korrekturen
