@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 03.04.2019 21:45
+# $Id: 98_Blitzer.pm 05.04.2019 15:30
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -100,7 +100,14 @@ sub Blitzer_Define() {
 		$hash->{DEF} = 0;
 	}
 	
-	
+	if (not defined($hash->{STATE})){
+		#Log3 $name, 1, "Blitzer: not defined";
+		#nur beim ersten define setzen:
+		$attr{$name}{icon} = "message_attention" if( not defined( $attr{$name}{icon} ) );
+		$attr{$name}{room} = "Blitzer" if( not defined( $attr{$name}{room} ) );
+	} else {
+		#Log3 $name, 1, "Blitzer: already defined";
+	}
 	$hash->{STATE} = "Defined";
 	#$modules{Blitzer}{defptr}{$hash->{DEF}} = $hash;
 	
@@ -108,10 +115,8 @@ sub Blitzer_Define() {
 	$attr{$name}{radius} = "10" if( not defined( $attr{$name}{radius} ) );
 	$attr{$name}{Ausgabe} = $VoreinstellungenStandards{Stadt} if( not defined( $attr{$name}{Ausgabe} ) );
 	$attr{$name}{createAllReadings} = "0" if( not defined( $attr{$name}{createAllReadings} ) );
-	$attr{$name}{icon} = "message_attention" if( not defined( $attr{$name}{icon} ) );
 	$attr{$name}{createNoHTML} = "0" if( not defined( $attr{$name}{createNoHTML} ) );
 	$attr{$name}{createUpdateReading} = "1" if( not defined( $attr{$name}{createUpdateReading} ) );
-	$attr{$name}{room} = "Blitzer" if( not defined( $attr{$name}{room} ) );
 	$attr{$name}{HTML_Before} = "<html> <p align='left'>Aktuelle Blitzer:<br>" if( not defined( $attr{$name}{HTML_Before} ) );
 	$attr{$name}{HTML_Without} = "<html> <p align='left'>Keine Blitzer in der Nähe</p></html>" if( not defined( $attr{$name}{HTML_Without} ) );
 	
@@ -638,12 +643,12 @@ sub Blitzer_getOrteCallback($){
 		Log3 $name, 5, "Blitzer: POIItem2 = ".Dumper(\$POIItem2);
 		if(not defined($POIItem2->{ready})){
 			$alle=0;
-			$hash->{STATE} = "PENDING";
+			#$hash->{STATE} = "PENDING";
 			last;
 		}
 	}
 	if ($alle eq 1){
-		$hash->{STATE} = "READY";
+		#$hash->{STATE} = "READY";
 		Log3 $name, 5, "Blitzer: alle = ".Dumper(\@BlitzerPOIS);
 	} else {
 		#Noch nicht alle eingelesen!
