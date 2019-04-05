@@ -1,6 +1,7 @@
 Module von Bismsoa
 Alle Änderungen siehe: https://github.com/bismosa/FHEM/
 -------------------------------------------------------------
+05.04.2019 Attribute Icon+room nur beim ersten define hinzufügen
 03.04.2019 Optional Update mit neuem Radius
 01.04.2019 Anzahl der Blitzer in der Anzeige + opt. reading
 31.03.2019 Englische Übersetzung hinzugefügt. Danke @inoma !!
