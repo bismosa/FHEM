@@ -100,14 +100,15 @@ sub Blitzer_Define() {
 		$hash->{DEF} = 0;
 	}
 	
-	if (defined($hash->{STATE})){
-		if ($hash->{STATE} eq "???"){
-			#Log3 $name, 1, "Blitzer: not defined";
-			#nur beim ersten define setzen:
-			$attr{$name}{icon} = "message_attention" if( not defined( $attr{$name}{icon} ) );
-			$attr{$name}{room} = "Blitzer" if( not defined( $attr{$name}{room} ) );
-		}
-	} 
+	if ($init_done == 1){
+		#Log3 $name, 1, "Blitzer: not defined";
+		#nur beim ersten define setzen:
+		$attr{$name}{icon} = "message_attention" if( not defined( $attr{$name}{icon} ) );
+		$attr{$name}{room} = "Blitzer" if( not defined( $attr{$name}{room} ) );
+	} else {
+		#Log3 $name, 1, "Blitzer: already defined";
+	}
+	 
 	$hash->{STATE} = "Defined";
 	#$modules{Blitzer}{defptr}{$hash->{DEF}} = $hash;
 	
