@@ -887,8 +887,8 @@ sub Blitzer_translateTEXT($) {
 =item [helper]
 =item summary Show speed cameras in Germany
 =item summary_DE Blitzer anzeigen
-
 =begin html
+
 <a name="Blitzer"></a>
 <h3>Blitzer</h3>
 <div>
@@ -1113,6 +1113,7 @@ sub Blitzer_translateTEXT($) {
 </div>
 
 =end html
+
 =begin html_DE
 
 <a name="Blitzer"></a>
