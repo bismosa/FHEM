@@ -1341,4 +1341,5 @@ sub Blitzer_translateTEXT($) {
 </div>
 
 =end html_DE
+
 =cut
