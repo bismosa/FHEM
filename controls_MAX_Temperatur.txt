@@ -1,0 +1,2 @@
+DEL ./FHEM/98_MAX_Temperatur.pm
+UPD 2019-05-14_18:28:17 32944 FHEM/98_MAX_Temperatur.pm
