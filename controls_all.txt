@@ -1,3 +1,5 @@
 DEL ./FHEM/98_Blitzer.pm
 UPD 2019-04-26_15:59:21 50079 FHEM/98_Blitzer.pm
+DEL ./FHEM/98_MAX_Temperatur.pm
+UPD 2019-05-14_18:28:17 32944 FHEM/98_MAX_Temperatur.pm
    
