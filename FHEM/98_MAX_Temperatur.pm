@@ -323,7 +323,7 @@ sub MAX_Temperatur_Notify($$){
 	my $name   = $hash->{NAME};
 	my $device = $dev_hash->{NAME};
 
-	Log3 $name,3,"$name, event from $device -> $events";
+	#Log3 $name,3,"$name, event from $device -> $events";
 	
 	my @MaxDevices = split(/,/, ReadingsVal($name,"Selected_MaxDevice",""));
 	my $IsMyDevice = 0;
