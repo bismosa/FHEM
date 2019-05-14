@@ -878,7 +878,7 @@ sub MAX_Temperatur_GetHTMLReset($){
 	</ul>
 
   <h4>Attributes</h4>
-  <ul><a name="Blitzer_Attr"></a>
+  <ul><a name="Max_Temperatur_Attr"></a>
     <li><a name="Layout">Layout</a><br>
 			<code>attr &lt;NAME&gt; Layout &lt;HTML&gt;</code><br>
             Layoutmöglichkeit der Anzeige.<br><br>
@@ -1031,7 +1031,7 @@ sub MAX_Temperatur_GetHTMLReset($){
   </ul>
   
   <h4>Readings</h4>
-  <ul><a name="Blitzer_Readings"></a>
+  <ul><a name="Max_Temperatur_Readings"></a>
 		<li><a name="Selected_*">Selected_*</a><br>
 			Die derzeit ausgewählten Werte der Auswahlboxen.<br>
     </li>
