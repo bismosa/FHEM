@@ -1,6 +1,7 @@
 Module von Bismsoa
 Alle Änderungen siehe: https://github.com/bismosa/FHEM/
 -------------------------------------------------------------
+14.05.2019 NEU:MAX_Temperatur - Einstellmöglichkeit für MAX-Heizkörperthermostate
 26.04.2019 Bugfix im Help-Teil   
 06.04.2019 kleines Bugfix zur letzten Änderung
 05.04.2019 Attribute Icon+room nur beim ersten define hinzufügen
