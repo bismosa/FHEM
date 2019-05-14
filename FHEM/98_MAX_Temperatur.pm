@@ -112,6 +112,8 @@ sub MAX_Temperatur_Define($$){
 	readingsBulkUpdate($hash,"Selected_Device","---");
 	readingsBulkUpdate($hash,"Selected_MaxDevice","---");
 	readingsEndUpdate($hash,1);
+	#Auf keine Events von außerhalb reagieren
+	$hash->{NOTIFYDEV} = $name;
 	
 	#Standards setzen, die unbedingt vorhanden sein sollten
 	$attr{$name}{maxHour}= '12'            unless (exists($attr{$name}{maxHour}));
@@ -254,7 +256,7 @@ sub MAX_Temperatur_Execute($) {
 	}
 	
 	Log3 $name,4,"$name, set -> ".$stxt;
-	my $error = CommandSet(undef, $stxt);
+	$error = CommandSet(undef, $stxt);
 
 	if($error){ 
 		Log3 $name,3,"$name, error -> ".$error; 
@@ -321,7 +323,7 @@ sub MAX_Temperatur_Notify($$){
 	my $name   = $hash->{NAME};
 	my $device = $dev_hash->{NAME};
 
-	#Log3 $name,3,"$name, event from $device -> $events";
+	Log3 $name,3,"$name, event from $device -> $events";
 	
 	my @MaxDevices = split(/,/, ReadingsVal($name,"Selected_MaxDevice",""));
 	my $IsMyDevice = 0;
@@ -431,10 +433,12 @@ sub MAX_Temperatur_GetStructureDevices($$){
 	
 	#Prüfen, ob es eine structure ist:
 	my $Devhash = $defs{$structureName};
-	if ($Devhash->{TYPE} eq "structure"){
-		@StrucDevices = split(/ /, $Devhash->{DEF});
-		splice @StrucDevices, 0, 1;
-		return @StrucDevices;
+	if (defined($Devhash->{TYPE})){
+		if ($Devhash->{TYPE} eq "structure"){
+			@StrucDevices = split(/ /, $Devhash->{DEF});
+			splice @StrucDevices, 0, 1;
+			return @StrucDevices;
+		}
 	}
 	
 	return @StrucDevices;
@@ -479,6 +483,7 @@ sub Max_Temperatur_GetDevState($){
 	readingsSingleUpdate($hash,"state",$state,1);
 	
 	#Anzahl der zu verarbeitenden Events beggrenzen
+	#TODO! Das ist nur, wenn Device Aufgerufen! Nicht nach neustarrt!!!
 	$hash->{NOTIFYDEV} = join(",",@MaxDevices);
   
 	return $state;
