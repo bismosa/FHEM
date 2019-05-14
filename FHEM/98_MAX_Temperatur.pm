@@ -841,7 +841,13 @@ sub MAX_Temperatur_GetHTMLReset($){
 <h3>MAX_Temperatur</h3>
 <div>
 	<ul>
-		<p>Dieses Modul erweitert die Heizkörpersteuerung MAX um eine genauere Einstellmöglichkeit.<br>
+		<p>Dieses Modul erweitert die Heizkörpersteuerung MAX um weitere Einstellmöglichkeiten.<br>
+		Möglichkeiten:<br>
+		- Setzen der Temperatur für ein oder mehrere Heizkörperthermostate.<br>
+		- Setzen der Temperatur und der Zeit (Urlaubsmodus).<br>
+		- Gruppen können für dieses Modul festgelegt werden.<br>
+		- Es können einzelne Devices hinzugefügt oder auch ausgeschlossen werden.<br>
+		- Das Layout für die Auswahlfelder kann beliebig angepasst werden.<br>
 		</p>
 		<h4>Beispiele:</h4>
 		<p>
