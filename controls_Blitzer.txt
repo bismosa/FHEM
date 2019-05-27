@@ -1,3 +1,2 @@
 DEL ./FHEM/98_Blitzer.pm
 UPD 2019-04-26_15:59:21 50079 FHEM/98_Blitzer.pm
-   
