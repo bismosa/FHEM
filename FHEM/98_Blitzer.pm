@@ -11,9 +11,8 @@
 #
 #######################################################################################################################################################
 # !!! ToDo´s !!!
-#- 
-#Ideen:  
-#- 2. Reading ermöglichen? 1x HTML + 1x Text ?
+#- Map aktivieren - uncaught reference error
+#- Map als Bild für Pushnachtrichten
 #######################################################################################################################################################
 #Special Thanks:
 #@inoma Danke für die englische Übersetzung der Commandref! 
@@ -52,7 +51,7 @@ my %VoreinstellungenStandards = (
 my @BlitzerPOIS;
 
 my @Werte=("display_name","house_number","road","suburb","city_district","city","postcode","country","country_code","town","village","building");
-my @WerteVL=("backend","confirm_date","content","counter","create_date","distance","distanceShort","gps_status","id","info","lat","lat_s","lng","lng_s","polyline","street","type","vmax");
+my @WerteVL=("backend","confirm_date","content","counter","create_date","distance","distanceShort","gps_status","id","info","lat","lat_s","lng","lng_s","polyline","street","type","vmax","MapLink");
 
 #####################################
 sub Blitzer_Initialize() {
@@ -75,6 +74,7 @@ sub Blitzer_Initialize() {
 						."disable:0,1 "
 						."MaxSpeedCameras "
 						."createCountReading:0,1 "
+						."MapWidth MapHeight MapShow:0,1 "
 						.$readingFnAttributes;
   $hash->{FW_summaryFn}	= "Blitzer_summaryFn";          # displays html instead of status icon in fhemweb room-view
 }
@@ -225,6 +225,7 @@ sub Blitzer_Set($$$@) {
 	
 	if ($cmd eq "Update"){
 		Blitzer_Update($hash,$cmd2,$cmd3,$cmd4);
+		Blitzer_CreateMap($hash);
 		return;
 	}
 	
@@ -268,10 +269,14 @@ sub Blitzer_Get($$@){
 	   Log3 $name, 5, "hash = ".Dumper(\$hash);
 	   return Dumper(\$hash);
 	}
+	elsif($opt eq "MapHTML")
+	{
+	   return "<plaintext>".Blitzer_CreateMap($hash);
+	}
 	
 	else
 	{
-		return "Unknown argument $opt, choose one of allReadings hash";
+		return "Unknown argument $opt, choose one of allReadings hash MapHTML";
 	}
 }
 
@@ -294,6 +299,9 @@ sub Blitzer_summaryFn($$$$){
 	$html.="<td><a onClick=\"FW_cmd('$FW_ME$FW_subdir?XHR=1&$cmd')\">$img</a></td>";
 	$html.="<td>".ReadingsVal($name, "html", "")."</td>";
 	$html .= "</tr></table></div>"; 
+	if (AttrVal($name,"MapShow",0) == 1){
+		$html .= Blitzer_CreateMap($hash);
+	}
 	return $html;
 }
 
@@ -538,6 +546,9 @@ sub Blitzer_BlitzerDatenCallback($) {
 			Log3 $name, 4, "Blitzer: Distance > Radius = $distance > $radius";
 		}
 		
+		#Google Maps Link
+		#https://www.google.com/maps/search/?api=1&query=36.26577,-92.54324
+		$item->{MapLink} = "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://www.google.com/maps/search/?api=1&query=$Poi_lat,$Poi_lng\">Map</a>";
 	}
 	
 	my @sorted =  sort { $a->{distance} <=> $b->{distance} } @FilteredpoisArray;
@@ -586,9 +597,84 @@ sub Blitzer_BlitzerDatenCallback($) {
 		}
 		
 	}
-	
-
 	return;
+}
+
+sub Blitzer_CreateMap($){
+	my $hash = shift;
+	my $name = $hash->{NAME};
+	my $HomeLat = AttrVal("$name", "home_latitude", "52.000");
+	my $HomeLng = AttrVal("$name", "home_longitude", "8.000");
+	my $Width = AttrVal("$name", "MapWidth", "600px"); 
+	my $Height = AttrVal("$name", "MapHeight", "400px"); 
+	my $html.=<<'EOF';
+<!DOCTYPE html>
+<html lang="de">
+   <head>
+      <meta charset="UTF-8">
+      <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /> -->
+      <title>HowTo: Mini-Beispiel "Leaflet Karte mit Marker"</title>
+      <!-- leaflet.css und leaflet.js von externer Quelle einbinden -->
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
+      <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+   </head>
+   <body>
+EOF
+	$html .= "<div id='meineKarte' style='height: $Height; width: $Width;'></div>";
+	$html .=<<'EOF';
+      <!-- OSM-Basiskarte einfügen und zentrieren -->
+      <script type='text/javascript'>
+	  var greenIcon = new L.Icon({
+		iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+		shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+		iconSize: [25, 41],
+		iconAnchor: [12, 41],
+		popupAnchor: [1, -34],
+		shadowSize: [41, 41]
+});
+EOF
+         $html .= "var Karte = L.map('meineKarte').setView([$HomeLat, $HomeLng], 12);";
+         $html .=<<'EOF';
+		 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+         'attribution':  'Kartendaten &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> Mitwirkende',
+         'useCache': true
+         }).addTo(Karte);
+      </script>
+      <!-- Marker einfügen -->
+      <script>
+EOF
+	#Home Marker
+	$html .= "var marker0 = L.marker([".$HomeLat.",".$HomeLng."], {icon: greenIcon}).addTo(Karte).bindPopup(\"Home\"); ";
+	
+	#Marker erstellen
+	my $MarkerI=0;
+	my $Markers="";
+	for my $POI(@BlitzerPOIS){
+		$MarkerI += 1;
+		my $Text = ($POI->{vmax})." Km/h<br>";
+		$Text .= ($POI->{display_name})."<br>";
+		$Text .= "Erstellt: ".($POI->{create_date})."<br>";
+		$Text .= "Zuletzt gesehen: ".($POI->{confirm_date});
+		$html .= "var marker".$MarkerI." = L.marker([".($POI->{lat}).",".($POI->{lng})."]).addTo(Karte).bindPopup(\"$Text\"); ";
+		if ($MarkerI == 1){
+			$Markers .= "marker".$MarkerI;
+		} else {
+			$Markers .= ",marker".$MarkerI;
+		}
+	}
+	if ($MarkerI > 0){
+		
+		$html .= "var group = new L.featureGroup([marker0,".$Markers."]); ";
+		$html .= "Karte.fitBounds(group.getBounds());";
+	}
+	$html .=<<'EOF';
+      </script>
+   </body>
+</html>
+EOF
+	
+	return $html;
+
 }
 
 ###################################
@@ -787,6 +873,8 @@ sub Blitzer_CreateHTML($){
 		$html = Blitzer_translateTEXT($html);
 	}
 	
+	
+	
 	Log3 $name, 4, "Blitzer: html = $html";
 	
 	#Readings nur neu, wenn auch neue Werte!
@@ -953,6 +1041,10 @@ sub Blitzer_translateTEXT($) {
 			<code>get &lt;Blitzer-Device&gt; hash</code><br>
             Returns the complete %hash of the device (Debug)<br>
     </li>
+	<li><a name="MapHTML">MapHTML</a><br>
+			<code>get &lt;Blitzer-Device&gt; MapHTML</code><br>
+            Returns the HTML-Code for the Map.<br>
+    </li>
 	</ul>
   
   <h4>Attributes</h4>
@@ -982,6 +1074,10 @@ sub Blitzer_translateTEXT($) {
               <tr>
                 <td>distanceShort</td>
                 <td>Distance of the speed camera from the home coordinate (line of sight), one decimal place</td>
+              </tr>
+			  <tr>
+                <td>MapLink</td>
+                <td>Link to Google Maps with the coordinate from the speed camera</td>
               </tr>
               <tr>
                 <td>{OR</td>
@@ -1079,6 +1175,30 @@ sub Blitzer_translateTEXT($) {
 	<li><a name="disable">disable 0|1</a><br>
 			<code>attr &lt;Blitzer-Device&gt; disable &lt;1|0&gt;</code><br>
             No automatic update<br>
+    </li>	
+	<li><a name="MapShow">MapShow 0|1</a><br>
+			<code>attr &lt;Blitzer-Device&gt; MapShow &lt;1|0&gt;</code><br>
+            Display a Map with the current speed Cameras.<br>
+			<br>
+			The Speed Cameras are shown as POI on the Map. The Map is automatically zoomed.<br>
+			The	Home-coordinate is shown in green and the Speed Cameras are shown in Blue.<br>
+			If you click on a POI in the map, further details of the speed camera are displayed.<br>
+			<br>
+			If there is no speed camera nearby, only the home coordinate will be displayed. <br>
+			<br>
+			Restriction: <br>
+			There must be only one camera device in the room, otherwise there will be duplicate card definitions. <br>
+    </li>	
+	<li><a name="MapWidth">MapWidth</a><br>
+			<code>attr &lt;Blitzer-Device&gt; MapWidth 600px</code><br>
+            Only if MapShow 1<br>
+			The width of the displayed map. Either the width in pixels (400px) <br>
+			or the width in percent (100%) <br>
+    </li>	
+	<li><a name="MapHeight">MapHeight</a><br>
+			<code>attr &lt;Blitzer-Dezvice&gt; MapHeight 600px</code><br>
+			Only if MapShow 1<br>
+			The height of the displayed map. Specify in pixels (400px) <br>
     </li>	
 	
 	
@@ -1180,6 +1300,10 @@ sub Blitzer_translateTEXT($) {
 			<code>get &lt;Blitzer-Device&gt; hash</code><br>
             Gibt den kompletten %hash des Devices aus (Debug)<br>
     </li>
+	<li><a name="MapHTML">MapHTML</a><br>
+			<code>get &lt;Blitzer-Device&gt; MapHTML</code><br>
+            Gibt den HTML-Code für die Map aus.<br>
+    </li>
 	</ul>
   
   <h4>Attributes</h4>
@@ -1209,6 +1333,10 @@ sub Blitzer_translateTEXT($) {
               <tr>
                 <td>distanceShort</td>
                 <td>Abstand des Blitzers von der Home-Koordinate (Luftlinie) eine Kommastelle</td>
+              </tr>
+			  <tr>
+                <td>MapLink</td>
+                <td>Link auf Google Maps mit der Koordinate des Blitzers</td>
               </tr>
               <tr>
                 <td>{OR</td>
@@ -1308,9 +1436,32 @@ sub Blitzer_translateTEXT($) {
 			<code>attr &lt;Blitzer-Device&gt; disable &lt;1|0&gt;</code><br>
             Kein automatisches aktualisieren<br>
     </li>	
-	
-	
-    
+	<li><a name="MapShow">MapShow 0|1</a><br>
+			<code>attr &lt;Blitzer-Device&gt; MapShow &lt;1|0&gt;</code><br>
+            Karte mit den Blitzern anzeigen.<br>
+			Es handelt sich um eine Dynamische Karte. Zommen und verschieben ist möglich.<br>
+			<br>
+			Die Blitzer werden als POI auf einer Karte angezeigt und der Kartenausschnitt automatisch<br>
+			gezoomt. Die Home-Koordinate wird in Grün und alle Blitzerstandorte in Blau dargestellt.<br>
+			Wir auf ein POI in der Karte geklickt, werden weitere Details zum Blitzer angezeigt.<br>
+			<br>
+			Ist kein Blitzer in der Nähe, wird nur die Home-Koordinate angezeigt.<br>
+			<br>
+			Einschränkung:<br>
+			Es darf nur ein Blitzer-Device im Raum vorhanden sein, da es sonst zu doppelten Definitionen der Karte kommt.<br>
+    </li>	
+	<li><a name="MapWidth">MapWidth</a><br>
+			<code>attr &lt;Blitzer-Device&gt; MapWidth 600px</code><br>
+            Nur wenn MapShow 1 ist.<br>
+			Die breite der angezeigten Karte. Entweder die Breite in Pixeln (400px)<br>
+			oder die Breite in Prozent (100%)<br>
+    </li>	
+	<li><a name="MapHeight">MapHeight</a><br>
+			<code>attr &lt;Blitzer-Dezvice&gt; MapHeight 600px</code><br>
+            Nur wenn MapShow 1 ist.<br>
+			Die Höhe der angezeigten Karte. In Pixeln angeben (400px)<br>
+    </li>	
+	    
   </ul>
   
   <h4>Readings</h4>
