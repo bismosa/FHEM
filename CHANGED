@@ -1,6 +1,7 @@
 Module von Bismsoa
 Alle Änderungen siehe: https://github.com/bismosa/FHEM/
 -------------------------------------------------------------
+21.06.2019 Blitzer:Neues Atrribut: ShowFixed -> Anzeige von Festinstallierten Blitzern
 31.05.2019 Blitzer:Neu: ShowMap eine Karte mit den Blitzern in FHEM anzeigen
 31.05.2019 Blitzer:Neu:Ausgabe: "MapLink". Einen Link zu Google Maps mit der Blitzer-Position
 14.05.2019 NEU:MAX_Temperatur - Einstellmöglichkeit für MAX-Heizkörperthermostate
