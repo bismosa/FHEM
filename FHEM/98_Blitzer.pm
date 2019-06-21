@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 05.04.2019 15:30
+# $Id: 98_Blitzer.pm 21.06.2019 15:30
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -75,6 +75,7 @@ sub Blitzer_Initialize() {
 						."MaxSpeedCameras "
 						."createCountReading:0,1 "
 						."MapWidth MapHeight MapShow:0,1 "
+						."ShowFixed:0,1 "
 						.$readingFnAttributes;
   $hash->{FW_summaryFn}	= "Blitzer_summaryFn";          # displays html instead of status icon in fhemweb room-view
 }
@@ -433,8 +434,14 @@ sub Blitzer_Update($$$$){
 	my $HTTPTimeout = AttrVal($name, "httpGetTimeout", 5);
 	#Zunächst die Blitzerdaten
 	#https://cdn2.atudo.net/api/1.0/vl.php?type=0,1,2,3,4,5,6&box=52.xxxxxx,8.xxxxxx,53.xxxxxx,9.xxxxxx
+	my $ShowFixed = AttrVal($name, "ShowFixed", 0);
+	my $GetType = "0,1,2,3,4,5,6";
+	if ($ShowFixed == 1){
+		$GetType = "0,1,2,3,4,5,6,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115";
+	} 
+	#0,1,2,3,4,5,6,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115
 	my $param = {
-		url        => "https://cdn2.atudo.net/api/1.0/vl.php?type=0,1,2,3,4,5,6&box=$area_bottomLeft_latitude,$area_bottomLeft_longitude,$area_topRight_latitude,$area_topRight_longitude",
+		url        => "https://cdn2.atudo.net/api/1.0/vl.php?type=$GetType&box=$area_bottomLeft_latitude,$area_bottomLeft_longitude,$area_topRight_latitude,$area_topRight_longitude",
 		timeout    => $HTTPTimeout,
 		method     => "GET",            # Lesen von Inhalten
 		hash       => $hash,            # Muss gesetzt werden, damit die Callback funktion wieder $hash hat
@@ -632,6 +639,14 @@ EOF
 		popupAnchor: [1, -34],
 		shadowSize: [41, 41]
 });
+	var redIcon = new L.Icon({
+		iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+		shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+		iconSize: [25, 41],
+		iconAnchor: [12, 41],
+		popupAnchor: [1, -34],
+		shadowSize: [41, 41]
+});
 EOF
          $html .= "var Karte = L.map('meineKarte').setView([$HomeLat, $HomeLng], 12);";
          $html .=<<'EOF';
@@ -655,7 +670,17 @@ EOF
 		$Text .= ($POI->{display_name})."<br>";
 		$Text .= "Erstellt: ".($POI->{create_date})."<br>";
 		$Text .= "Zuletzt gesehen: ".($POI->{confirm_date});
-		$html .= "var marker".$MarkerI." = L.marker([".($POI->{lat}).",".($POI->{lng})."]).addTo(Karte).bindPopup(\"$Text\"); ";
+		
+		my $POIType = $POI->{type};
+		my @values = ("101","102","103","104","105","106","107","108","109","110","111","112","113","114","115");
+		if ( grep( /^$POIType$/, @values ) ) {
+			$Text = "Festinstallierter Blitzer<br>".$Text;
+			$html .= "var marker".$MarkerI." = L.marker([".($POI->{lat}).",".($POI->{lng})."], {icon: redIcon}).addTo(Karte).bindPopup(\"$Text\"); ";
+		} else {
+			$html .= "var marker".$MarkerI." = L.marker([".($POI->{lat}).",".($POI->{lng})."]).addTo(Karte).bindPopup(\"$Text\"); ";
+		}
+		
+		
 		if ($MarkerI == 1){
 			$Markers .= "marker".$MarkerI;
 		} else {
@@ -1200,6 +1225,10 @@ sub Blitzer_translateTEXT($) {
 			Only if MapShow 1<br>
 			The height of the displayed map. Specify in pixels (400px) <br>
     </li>	
+	<li><a name="ShowFixed">ShowFixed</a><br>
+			<code>attr &lt;Blitzer-Dezvice&gt; ShowFixed &lt;1|0&gt;</code><br>
+            Show also fixed Speed Cameras.<br>
+    </li>	
 	
 	
     
@@ -1460,6 +1489,10 @@ sub Blitzer_translateTEXT($) {
 			<code>attr &lt;Blitzer-Dezvice&gt; MapHeight 600px</code><br>
             Nur wenn MapShow 1 ist.<br>
 			Die Höhe der angezeigten Karte. In Pixeln angeben (400px)<br>
+    </li>
+	<li><a name="ShowFixed">ShowFixed</a><br>
+			<code>attr &lt;Blitzer-Dezvice&gt; ShowFixed &lt;1|0&gt;</code><br>
+            Auch die festinstallierten Blitzer anzeigen.<br>
     </li>	
 	    
   </ul>
