@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 22.06.2019 09:30
+# $Id: 98_Blitzer.pm 22.06.2019 13:00
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -722,7 +722,7 @@ sub Blitzer_getOrteCallback($){
 		}
 		readingsBulkUpdate($hash, "Error", "error while requesting ".$param->{url}." - $err", 1);
 		readingsEndUpdate($hash, 1); 		# Notify is done by Dispatch
-		return;
+		#return;
 	}
 	
 	Log3 $name, 5, "Blitzer: param = ".Dumper(\$param);
