@@ -848,13 +848,13 @@ sub Blitzer_CreateHTML($){
 		foreach my $NVPOI(@BlitzerPOIS){
 			if ($NVPOI->{type} == 1000){
 				my $countNV = $NVPOI->{info};
-				Log3 $name, 3, "$countNV";
+				#Log3 $name, 3, "$countNV";
 				$countNV =~ s/{\"count_cluster\"://g;
-				Log3 $name, 3, "$countNV";
+				#Log3 $name, 3, "$countNV";
 				$countNV =~ s/}//g;
-				Log3 $name, 3, "$countNV";
+				#Log3 $name, 3, "$countNV";
 				$countNotVisible += $countNV; 
-				Log3 $name, 3, "$countNotVisible";
+				#Log3 $name, 3, "$countNotVisible";
 			}
 		}
 		if ($countNotVisible > 0){
