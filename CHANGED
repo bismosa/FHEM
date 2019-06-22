@@ -1,6 +1,7 @@
 Module von Bismsoa
 Alle Änderungen siehe: https://github.com/bismosa/FHEM/
 -------------------------------------------------------------
+22.06.2019 Blitzer:Bei Timeout von OSM die restlichen Daten anzeigen
 22.06.2019 Blitzer:Rechtschreibfehler korrigiert
 22.06.2019 Blitzer:Unnötige Logeinträge entfernt
 22.06.2019 Blitzer:Wenn zu viele im Bereich wird ein Hinweis mit angezeigt
