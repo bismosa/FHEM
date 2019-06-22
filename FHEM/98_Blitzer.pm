@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 21.06.2019 15:30
+# $Id: 98_Blitzer.pm 22.06.2019 09:30
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -837,11 +837,41 @@ sub Blitzer_CreateHTML($){
 		if ($createNoHTML == 0){
 			$html = $htmlVor;
 		}
+		
+		#Wenn zu viele:
+		#"id": 1,
+		#"lat": 50.635690341007,
+		#"lng": 6.260009765625,
+		#"type": 1000,
+		#"info": "{\"count_cluster\":16}"
+		my $countNotVisible = 0;
+		foreach my $NVPOI(@BlitzerPOIS){
+			if ($NVPOI->{type} == 1000){
+				my $countNV = $NVPOI->{info};
+				Log3 $name, 3, "$countNV";
+				$countNV =~ s/{\"count_cluster\"://g;
+				Log3 $name, 3, "$countNV";
+				$countNV =~ s/}//g;
+				Log3 $name, 3, "$countNV";
+				$countNotVisible += $countNV; 
+				Log3 $name, 3, "$countNotVisible";
+			}
+		}
+		if ($countNotVisible > 0){
+			if ($createNoHTML == 0){
+				$html .= "Weitere ".$countNotVisible." Blizer vorhanden. Bitte Bereich verkleinern!<br>";
+			} else {
+				$html .= "Weitere ".$countNotVisible." Blizer vorhanden. Bitte Bereich verkleinern!\n";
+			}
+			
+		}
+				
 		my $SollAnzeige=0;
 		my $IsOR = 0;
 		my $PrevHasValue = 0;
 		for (my $i=0;$i<$Anzahl;$i++) {
 			foreach my $item(@Ausgabe){
+							
 				if (substr($item, 0, 1) eq "["){
 					$html.=substr($item, 1, -1)." ";
 					next;
