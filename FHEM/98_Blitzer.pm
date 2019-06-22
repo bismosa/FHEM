@@ -859,9 +859,9 @@ sub Blitzer_CreateHTML($){
 		}
 		if ($countNotVisible > 0){
 			if ($createNoHTML == 0){
-				$html .= "Weitere ".$countNotVisible." Blizer vorhanden. Bitte Bereich verkleinern!<br>";
+				$html .= "Weitere ".$countNotVisible." Blitzer vorhanden. Bitte Bereich verkleinern!<br>";
 			} else {
-				$html .= "Weitere ".$countNotVisible." Blizer vorhanden. Bitte Bereich verkleinern!\n";
+				$html .= "Weitere ".$countNotVisible." Blitzer vorhanden. Bitte Bereich verkleinern!\n";
 			}
 			
 		}
