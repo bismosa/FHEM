@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 22.06.2019 13:00
+# $Id: 98_Blitzer.pm 07.08.2019 12:00
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -77,7 +77,11 @@ sub Blitzer_Initialize() {
 						."MapWidth MapHeight MapShow:0,1 "
 						."ShowFixed:0,1 "
 						.$readingFnAttributes;
-  $hash->{FW_summaryFn}	= "Blitzer_summaryFn";          # displays html instead of status icon in fhemweb room-view
+  #$hash->{FW_summaryFn}	= "Blitzer_summaryFn";          # displays html instead of status icon in fhemweb room-view
+  #NEU: Nicht statt Status Icon, sondern unterhalb einblenden:
+  $hash->{FW_detailFn}  = "Blitzer_summaryFn";
+  $hash->{FW_addDetailToSummary} = 1;
+  $hash->{FW_deviceOverview} = 1;
 }
 
 #####################################
@@ -297,8 +301,8 @@ sub Blitzer_summaryFn($$$$){
   
 	my $img = FW_makeImage("refresh");
 	my $cmd = "cmd.$name=set $name Update";
-	$html.="<td><a onClick=\"FW_cmd('$FW_ME$FW_subdir?XHR=1&$cmd')\">$img</a></td>";
-	$html.="<td>".ReadingsVal($name, "html", "")."</td>";
+	$html.="<td style=\"width: 50px;\"><a onClick=\"FW_cmd('$FW_ME$FW_subdir?XHR=1&$cmd')\">$img</a></td>";
+	$html.="<td style=\"width: unset;\">".ReadingsVal($name, "html", "")."</td>";
 	$html .= "</tr></table></div>"; 
 	if (AttrVal($name,"MapShow",0) == 1){
 		$html .= Blitzer_CreateMap($hash);
