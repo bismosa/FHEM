@@ -77,11 +77,11 @@ sub Blitzer_Initialize() {
 						."MapWidth MapHeight MapShow:0,1 "
 						."ShowFixed:0,1 "
 						.$readingFnAttributes;
-  #$hash->{FW_summaryFn}	= "Blitzer_summaryFn";          # displays html instead of status icon in fhemweb room-view
+  $hash->{FW_summaryFn}	= "Blitzer_summaryFn";          # displays html instead of status icon in fhemweb room-view
   #NEU: Nicht statt Status Icon, sondern unterhalb einblenden:
-  $hash->{FW_detailFn}  = "Blitzer_summaryFn";
-  $hash->{FW_addDetailToSummary} = 1;
-  $hash->{FW_deviceOverview} = 1;
+  #$hash->{FW_detailFn}  = "Blitzer_summaryFn";
+  #$hash->{FW_addDetailToSummary} = 1;
+  #$hash->{FW_deviceOverview} = 1;
 }
 
 #####################################
