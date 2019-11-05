@@ -1,2 +1,2 @@
 DEL ./FHEM/98_MAX_Temperatur.pm
-UPD 2019-05-14_21:07:39 33139 FHEM/98_MAX_Temperatur.pm
+UPD 2019-11-05_12:57:10 33934 FHEM/98_MAX_Temperatur.pm
