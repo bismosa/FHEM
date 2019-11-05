@@ -235,8 +235,12 @@ sub MAX_Temperatur_Execute($) {
 	if ($time_s && int(AttrVal($name,"createAT",0))){
 		@ar = split("\\.",$time_s.":".sprintf("%02d",$Sekunden));
 		my $time_at = $ar[2]."-".$ar[1]."-".$ar[0]."T".$ar[3];
-		my $autoAT = "autoAT_".$device;
-		$ATtxt = $autoAT." at ".$time_at." set $device desiredTemperature auto";
+		
+    my $autoAT = "autoAT_".$device;
+		#Illegale Zeichen entfernen/ersetzen
+    $autoAT =~ s/[^A-Za-z0-9]/_/g; # Replace all non-alphanumericals with "_"
+    
+    $ATtxt = $autoAT." at ".$time_at." set $device desiredTemperature auto";
 		$error = CommandDefine(undef, $ATtxt);
 		if (($defs{$autoAT}) && !$error && (AttrVal($name,"autoAT_room","MAX") ne "Unsorted")){
 			$attr{$autoAT}{room} = AttrVal($name,"autoAT_room","MAX");
@@ -252,6 +256,11 @@ sub MAX_Temperatur_Execute($) {
 		$stxt = "$device desiredTemperature $temp until ".$time_s;
 	} else {
 	# keine Zeitangabe
+    #Es muss eine Temperatur übermittelt werden. 
+    #Wird ein --- übertragen kommt es zu einem Log-Eintrag der Modus wird aber umgeschaltet
+    #if ("$temp" eq "---"){
+    #  $temp = "";
+    #}
 		$stxt = "$device desiredTemperature $mode $temp";
 	}
 	
@@ -264,9 +273,17 @@ sub MAX_Temperatur_Execute($) {
 	} else {
 		my $showMsg = AttrVal($name,"ShowMsg",1);
 		if ($showMsg eq 1){
-			return "OK: set ".$ATtxt."<br>".$stxt;
+      if (defined ($ATtxt)){
+        return "OK: set ".$ATtxt."<br>".$stxt;
+      } else {
+        return "OK: set ".$stxt;
+      }
 		} else {
-			return $ATtxt."<br>".$stxt;
+			if (defined ($ATtxt)){
+        return $ATtxt."<br>".$stxt;
+      } else {
+        return $stxt;
+      }
 		}
 	}
 }
@@ -477,7 +494,13 @@ sub Max_Temperatur_GetDevState($){
 		$state .= "Mode:".ReadingsVal($maxdev,"mode","???")." keepAuto:".AttrVal($maxdev,"keepAuto","?");
 		$state .= " Temp:".ReadingsVal($maxdev,"temperature","???")."°C desiredTemp:".ReadingsVal($maxdev,"desiredTemperature","???")."°C";
 		if ($AddDeviceName){
-			$state .= " ($maxdev)";
+      my $DeviceAlias = AttrVal($maxdev,"alias","?");
+      if ("$DeviceAlias" eq "?"){
+        $state .= " ($maxdev)";
+      } else {
+        $state .= " ($DeviceAlias)";
+      }
+			
 		}
 	}
 	readingsSingleUpdate($hash,"state",$state,1);
@@ -508,7 +531,11 @@ sub MAX_Temperatur_GetHTMLSelectMaxDevice($){
 		#Select
 		my $changecmd = "cmd.$name=set $name device ";
 		$html.= "<select id=\"$name$Reading\" name=\"val.$name\" onchange=\"FW_cmd('$FW_ME$FW_subdir?XHR=1&$changecmd ' + this.options[this.selectedIndex].value.replace(' ','&nbsp;'))\">";
-		foreach my $Device(@Devices) {
+		#Log3 $name,1,"DDESELECTED $DDSelected";
+    if ("$DDSelected" eq "---"){
+      $html.= "<option selected value=\"---\">---</option>";
+    }
+    foreach my $Device(@Devices) {
 			if ("$DDSelected" eq "$Device"){
 				
 				$html.= "<option selected value=\"".($Device)."\">".($Device)."</option>";
