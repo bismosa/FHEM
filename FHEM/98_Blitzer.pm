@@ -597,7 +597,7 @@ sub Blitzer_BlitzerDatenCallback($) {
 					timeout    => $HTTPTimeout,
 					method     => "GET",            # Lesen von Inhalten
 					hash       => $mydata,            # Muss gesetzt werden, damit die Callback funktion wieder $hash hat
-					header     => "",
+					header     => "User-Agent: Mozilla/1.22\r\nContent-Type: application/xml",
 					callback   =>  \&Blitzer_getOrteCallback   # Diese Funktion soll das Ergebnis dieser HTTP Anfrage bearbeiten
 				};
 				#agent: FHEM/1.0\r\nUser-Agent: FHEM/1.0\r\nAccept: application/json
@@ -727,7 +727,7 @@ sub Blitzer_getOrteCallback($){
 		readingsBulkUpdate($hash, "Error", "error while requesting ".$param->{url}." - $err", 1);
 		readingsEndUpdate($hash, 1); 		# Notify is done by Dispatch
 		#return;
-	}
+	} 
 	
 	Log3 $name, 5, "Blitzer: param = ".Dumper(\$param);
 	Log3 $name, 4, "Blitzer: err = $err";
