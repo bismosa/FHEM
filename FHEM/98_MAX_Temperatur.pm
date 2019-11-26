@@ -258,9 +258,10 @@ sub MAX_Temperatur_Execute($) {
 	# keine Zeitangabe
     #Es muss eine Temperatur übermittelt werden. 
     #Wird ein --- übertragen kommt es zu einem Log-Eintrag der Modus wird aber umgeschaltet
-    #if ("$temp" eq "---"){
-    #  $temp = "";
-    #}
+	#Wird die Temperatur "0" übergeben, kommt keine Fehlermeldung
+		if ("$temp" eq "---"){
+			$temp = 0;
+		}
 		$stxt = "$device desiredTemperature $mode $temp";
 	}
 	
