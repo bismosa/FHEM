@@ -961,26 +961,21 @@ sub MAX_Temperature_GetHTMLReset($){
                 <td>Selection box for the mode (auto | manual).</td>
               </tr>
               <tr>
-              <tr>
                 <td>[TEMP]</td>
                 <td>Selection box for the desired temperature.</td>
               </tr>
-              <tr>
               <tr>
                 <td>[DATE]</td>
                 <td>Selection box for the date.</td>
               </tr>
               <tr>
-              <tr>
                 <td>[CLOCK]</td>
                 <td>Selection box for the time.</td>
               </tr>
               <tr>
-              <tr>
                 <td>[SEND]</td>
                 <td>Button to send the new settings.</td>
               </tr>
-              <tr>
               <tr>
                 <td>[RESET]</td>
                 <td>Button to reset the settings made.</td>
@@ -1168,26 +1163,21 @@ sub MAX_Temperature_GetHTMLReset($){
                 <td>Auswahlbox für den Modus (auto|manual).</td>
               </tr>
               <tr>
-              <tr>
                 <td>[TEMP]</td>
                 <td>Auswahlbox für die gewünschte Temperatur.</td>
               </tr>
-              <tr>
               <tr>
                 <td>[DATE]</td>
                 <td>Auswahlbox für das Datum.</td>
               </tr>
               <tr>
-              <tr>
                 <td>[CLOCK]</td>
                 <td>Auswahlbox für die Uhrzeit.</td>
               </tr>
               <tr>
-              <tr>
                 <td>[SEND]</td>
                 <td>Button zum senden der neuen Einstellungen.</td>
               </tr>
-              <tr>
               <tr>
                 <td>[RESET]</td>
                 <td>Button zum zurücksetzen der gemachten Einstellungen.</td>
@@ -1206,7 +1196,7 @@ sub MAX_Temperature_GetHTMLReset($){
 			<code>attr &lt;NAME&gt; ignoreDevices &lt;Auflistung&gt;</code><br>
             Auflistung von Geräten, die von dem Modul ignoriert werden sollen.<br>
             Komma als Trenner.<br>
-            Beispiel:<<br>
+            Beispiel:<br>
             MyMax_Wohnzimmer,MyMax_Schlafzimmer<br>
     </li>
     <li><a name="addDevices">addDevices</a><br>
@@ -1214,7 +1204,7 @@ sub MAX_Temperature_GetHTMLReset($){
             Auflistung von Geräten, die zur Auswahlliste hinzugefügt werden sollen.<br>
 			Somit lassen sich dann auch z.B. "structure" hinzufügen.<br>
             Komma als Trenner.<br>
-            Beispiel:<<br>
+            Beispiel:<br>
             Struc_HeizungenUnten,Struc_HeizungenOben<br>
     </li>
     <li><a name="addDevicesFirst">addDevicesFirst</a><br>
