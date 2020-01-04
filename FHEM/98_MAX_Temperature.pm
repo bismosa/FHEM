@@ -126,7 +126,7 @@ sub MAX_Temperature_Define($$){
 	readingsBulkUpdate($hash,"Selected_MaxDevice","---");
 	readingsEndUpdate($hash,1);
 	#Auf keine Events von außerhalb reagieren
-	$hash->{NOTIFYDEV} = $name;
+	$hash->{NOTIFYDEV} = 'global';
 	
 	#Standards setzen, die unbedingt vorhanden sein sollten
 	$attr{$name}{maxHour}= '12'            unless (exists($attr{$name}{maxHour}));
@@ -732,7 +732,7 @@ sub MAX_Temperature_GetHTMLSelectTemperaturen($){
 	
 	my $temp    = "---,off,eco,comfort,boost,";
 	my $i;
-	for ($i=0;$i<52;$i++) { $temp .= sprintf("%.1f",4.5+(0.5*$i)).","; }
+	for ($i=0;$i<52;$i++) { $temp .= sprintf("%.1f",5+(0.5*$i)).","; }
 	$temp .="on";
 	
 	my $html	= MAX_Temperature_GetHTMLSelectListe($hash, $temp,"Selected_Temperatur");
