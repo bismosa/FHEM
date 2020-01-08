@@ -1,6 +1,7 @@
 Module von Bismsoa
 Alle Änderungen siehe: https://github.com/bismosa/FHEM/
 -------------------------------------------------------------
+08.01.2020 MAX_Temperatur:ALT/DEPRATCHED! Bitte MAX_Temperature verwenden! (https://forum.fhem.de/index.php/topic,107152.0.html)
 26.11.2019 MAX_Temperatur:Kleines Bugfix(https://github.com/bismosa/FHEM/issues/1) Danke dkadioglu!
 06.11.2019 Blitzer:UserAgent bei OSM Abfrage hinzugefügt
 05.11.2019 MAX_temperatur:Initialzustand Dropdown,Optimierung der Darstellung,Fehler bei Modusumschaltung
