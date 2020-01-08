@@ -6,6 +6,19 @@
 #
 # Dieses Modul erweitert die Heizkörpersteuerung MAX um eine genauere Einstellmöglichkeit. 
 #
+#  This code is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  The GNU General Public License can be found at
+#  http://www.gnu.org/copyleft/gpl.html.
+#  A copy is found in the textfile GPL.txt and important notices to the license
+#  from the author is found in LICENSE.txt distributed with these scripts.
+#  This script is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
 #######################################################################################################################################################
 #
 # Mögliche Kombinationen:
@@ -113,7 +126,8 @@ sub MAX_Temperatur_Define($$){
 	readingsBulkUpdate($hash,"Selected_MaxDevice","---");
 	readingsEndUpdate($hash,1);
 	#Auf keine Events von außerhalb reagieren
-	$hash->{NOTIFYDEV} = $name;
+	#$hash->{NOTIFYDEV} = $name;
+	$hash->{NOTIFYDEV} = 'global';
 	
 	#Standards setzen, die unbedingt vorhanden sein sollten
 	$attr{$name}{maxHour}= '12'            unless (exists($attr{$name}{maxHour}));
@@ -416,7 +430,10 @@ sub MAX_Temperatur_HTML($){
 	my $htmlSend = MAX_Temperatur_GetHTMLSend($hash);
 	my $htmlReset = MAX_Temperatur_GetHTMLReset($hash);
 	
-	my $html=$Layout;
+	my $altHTML="<b>Hinweis: Das Modul wurde umbenannt in <MAX_Temperature> und muss nicht mehr von Github geladen werden</b><br>";
+	$altHTML.="Bitte das Gerät neu anlegen. Dieser Code wird nicht mehr gepflegt.<br>";
+	$altHTML.="Details siehe Commandref/Device specific Help<br>";
+	my $html=$altHTML.$Layout;
 	
 	#Perl ausdrücke auswerten:
 	#ACHTUNG! VOR SEND! Sonst fehlen die geschweiften klammern!
@@ -859,12 +876,215 @@ sub MAX_Temperatur_GetHTMLReset($){
 
 <a name="MAX_Temperatur"></a>
 <h3>MAX_Temperatur</h3>
-
 <div>
 	<ul>
-		<p>Sorry, no english description yet. Please show in the Germand help section.
+	<p><b> Warning: <br>
+		This module is no longer maintained here ("deprecated"). It has been renamed to <br>
+		MAX_Temperature <br>
+		and can be found in the normal FHEM update. <br>
+		Changeover can easily be done using "Defmod". Create a new name here (rename later if necessary) and change the module name to MAX_Temperature. <br>
+		Please delete then this Device.<br>
+		The old module can be removed from the update process with: <br>
+		update delete https://raw.githubusercontent.com/bismosa/FHEM/master/controls_MAX_Temperature.txt <br>
+		</b><br>
+		<p>This module extends the MAX radiator control by additional setting options.<br>
+		Possibilities:<br>
+		- Set the temperature for one or more radiator thermostats. <br>
+		- Set the temperature and time (vacation mode). <br>
+		- Groups can be defined for this module. <br>
+		- Individual devices can be added or excluded. <br>
+		- The layout for the selection fields can be adjusted as required. <br>
+		</p>
+		<h4>Examples:</h4>
+		<p>
+			<code>define MaxTemp Max_Temperatur</code><br>
+			<code>define MaxTemp Max_Temperatur T</code><br>
+			<code>define MaxTemp Max_Temperatur HT</code><br>
+			<code>define MaxTemp Max_Temperatur WT</code><br>
+			<code>define MaxTemp Max_Temperatur 123456</code><br>
+		</p>
+      
+		<a name="Max_Temperatur_Define"></a>
+        <h4>Define</h4>
+		<p><code>define &lt;NAME&gt; Max_Temperatur</code><br>
+			Definition of a temperature module for all radiator thermostats and wall thermostats.<br>
+		</p>
+    <p><code>define &lt;NAME&gt; Max_Temperatur T</code><br>
+			Definition of a temperature module for all radiator thermostats and wall thermostats.<br>
+		</p>
+    <p><code>define &lt;NAME&gt; Max_Temperatur HT</code><br>
+			Definition of a temperature module only for radiator thermostats.<br>
+		</p>
+    <p><code>define &lt;NAME&gt; Max_Temperatur WT</code><br>
+			Definition of a temperature module only for wall thermostats.<br>
+		</p>
+    <p><code>define &lt;NAME&gt; Max_Temperatur 123456</code><br>
+			Definition of a temperature module for a specific thermostat.<br>
 		</p>
 	</ul>
+
+  <h4>Attributes</h4>
+  <ul><a name="Max_Temperatur_Attr"></a>
+    <li><a name="Layout">Layout</a><br>
+			<code>attr &lt;NAME&gt; Layout &lt;HTML&gt;</code><br>
+            Possibility of layout of the advertisement. <br> <br>
+             It is possible to define the layout yourself. HTML code is possible. Examples: <br>
+             Standard: <br>
+            [DEVICE][MODE][TEMP][SEND][DATE][CLOCK][SEND]&lt;br&gt;\n[STATE]<br><br>
+            
+            Structure as a table:<br>
+            [STATE]&lt;br&gt;&lt;table class=\"block wide\"&gt;&lt;tr&gt;&lt;td&gt;[DEVICE]&lt;/td&gt;&lt;td&gt;[MODE]&lt;/td&gt;&lt;td&gt;[DATE]&lt;/td&gt;&lt;td&gt;[CLOCK]&lt;/td&gt;&lt;td&gt;[SEND]&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+            <br><br>
+            
+            Without setting the Holiday mode:<br>
+            [STATE]&lt;br&gt;\n[DEVICE][MODE][TEMP][SEND]<br><br>
+            
+            Holiday mode setting only:<br>
+            [STATE]&lt;br&gt;\n[DEVICE][TEMP][DATE][CLOCK][SEND]<br><br>
+            
+            All entries one below the other:<br>
+            [STATE]&lt;br&gt;<br>
+            [DEVICE]&lt;br&gt;<br>
+            [MODE]&lt;br&gt;<br>
+            [TEMP]&lt;br&gt;<br>
+            [DATE]&lt;br&gt;<br>
+            [CLOCK]&lt;br&gt;<br>
+            [SEND]&lt;br&gt;<br><br>
+            
+            It is also possible to add Perl code (in curly brackets)<br>
+            {ReadingsVal("myDevice","MyReading","Default_Value")}[STATE][DEVICE][MODE][TEMP][SEND][DATE][CLOCK][SEND]<br><br>
+            
+            <b>Special entries:</b><br>
+            <table>
+             <colgroup> <col width="120"></colgroup>
+              <tr>
+                <td>[STATE]</td>
+                <td>Status<br>
+                    Display of readings of the selected MAX device. <br>
+                     Standard: Mode: (auto | manual | temporary) keepAuto: (0 | 1) Temp: (current temperature) desiredTemperature: (set temperature) <br>
+                     If a group is selected, the name of the group is displayed here.
+                </td>
+              </tr>
+              <tr>
+                <td>[DEVICE]</td>
+                <td>Selection box or name of the selected MAX device.</td>
+              </tr>
+              <tr>
+                <td>[MODE]</td>
+                <td>Selection box for the mode (auto | manual).</td>
+              </tr>
+              <tr>
+              <tr>
+                <td>[TEMP]</td>
+                <td>Selection box for the desired temperature.</td>
+              </tr>
+              <tr>
+              <tr>
+                <td>[DATE]</td>
+                <td>Selection box for the date.</td>
+              </tr>
+              <tr>
+              <tr>
+                <td>[CLOCK]</td>
+                <td>Selection box for the time.</td>
+              </tr>
+              <tr>
+              <tr>
+                <td>[SEND]</td>
+                <td>Button to send the new settings.</td>
+              </tr>
+              <tr>
+              <tr>
+                <td>[RESET]</td>
+                <td>Button to reset the settings made.</td>
+              </tr>
+            </table>
+    </li>
+    <li><a name="maxDay">maxDay</a><br>
+			<code>attr &lt;NAME&gt; maxDay (1,2,3,4,5,6,7,14,21,28,35)</code><br>
+            Setting how many days are entered in the selection field for the date.<br>
+    </li>
+    <li><a name="maxHour">maxHour</a><br>
+			<code>attr &lt;NAME&gt; maxHour (6,12,18,24)</code><br>
+            Setting how many hours are entered in the selection field for the time.<br>
+    </li>
+    <li><a name="ignoreDevices">ignoreDevices</a><br>
+			<code>attr &lt;NAME&gt; ignoreDevices &lt;listing&gt;</code><br>
+            List of devices to be ignored by the module. <br>
+             Comma as separator. <br>
+             Example: <br>
+            MyMax_Wohnzimmer,MyMax_Schlafzimmer<br>
+    </li>
+    <li><a name="addDevices">addDevices</a><br>
+			<code>attr &lt;NAME&gt; addDevices &lt;listing&gt;</code><br>
+            List of devices to be added to the selection list. <br>
+			This means that e.g. Add "structure". <br>
+            Comma as separator. <br>
+            Example: <br>
+            Struc_heating1,Struc_heating2<br>
+    </li>
+    <li><a name="addDevicesFirst">addDevicesFirst</a><br>
+			<code>attr &lt;NAME&gt; addDevicesFirst (0|1)</code><br>
+            Show the manually added devices first in the list.<br>
+    </li>
+    <li><a name="addGroups">addGroups</a><br>
+			<code>attr &lt;NAME&gt; addGroups (Text)</code><br>
+            Create groups. <br>
+             Examples: <br>
+            <code>Basement:Max_Device1,Max_Device2,Max_Device3 Upstairs:Max_Device4,Max_Device5</code><br>
+			<code>Group&amp;nbsp;1:Max_Device1,Max_Device2,Max_Device3 Group&amp;nbsp;2:Max_Device4,Max_Device5</code><br>
+            To insert a space in the group name, can be entered <code>&amp;nbsp;</code>. Example:<br>
+            <code>My&amp;nbsp;Group:Device1,Device2</code>
+    </li>
+    <li><a name="addGroupsFirst">addGroupsFirst</a><br>
+			<code>attr &lt;NAME&gt; addGroupsFirst (0|1)</code><br>
+            Show the groups first in the list.<br>
+    </li>
+    <li><a name="DevicesAlias">DevicesAlias</a><br>
+			<code>attr &lt;NAME&gt; addDevicesAlias &lt;listing&gt;</code><br>
+            Assign an alias for the MAX devices. <br>
+             Comma as separator. <br>
+             Examples: <br>
+            Struc_Radiator1:Radiator below,Struc_Radiator2:Radiator above<br>
+			Max-Device1:Radiator bathroom,Max-Device2:Radiator kitchen<br>
+    </li>
+    <li><a name="ShowMSg">ShowMSg</a><br>
+			<code>attr &lt;NAME&gt; ShowMSg (0|1)</code><br>
+            After sending settings, display a success notification in a dialog.<br>
+    </li>
+    <li><a name="SendButton">SendButton</a><br>
+			<code>attr &lt;NAME&gt; SendButton (Text)</code><br>
+            Either the name of a symbol or a text. Standard: <br>
+            audio_play<br>
+    </li>
+    <li><a name="ResetButton">ResetButton</a><br>
+			<code>attr &lt;NAME&gt; ResetButton (Text)</code><br>
+            Either the name of a symbol or a text. Standard: <br>
+            control_x<br>
+    </li>
+	<li><a name="createAT">createAT</a><br>
+			<code>attr &lt;NAME&gt; createAT (0|1)</code><br>
+            Automatically creates a temporary AT to the device after the time has expired <br>
+			to switch back to automatic mode. <br>
+			This is usually not necessary<br>
+    </li>
+	<li><a name="autoAT_room">autoAT_room</a><br>
+			<code>attr &lt;NAME&gt; autoAT_room MAX</code><br>
+			The room in which the temporary AT should be created. Default:<br>
+            MAX<br>
+    </li>
+    
+  </ul>
+  
+  <h4>Readings</h4>
+  <ul><a name="Max_Temperatur_Readings"></a>
+		<li><a name="Selected_*">Selected_*</a><br>
+			The currently selected values of the selection boxes.<br>
+    </li>
+  </ul>
+    
+</div>
+
 
 =end html
 
@@ -874,6 +1094,15 @@ sub MAX_Temperatur_GetHTMLReset($){
 <h3>MAX_Temperatur</h3>
 <div>
 	<ul>
+		<p><b>Achtung:<br>
+		Dieses Modul wird hier nicht mehr weiter gepflegt ("deprecated"). Es wurde umbenannt in <br>
+		MAX_Temperature<br>
+		und ist im normalen FHEM-Update zu finden.<br>
+		Umstellung kann leicht erfolgen mittels "Defmod". Hier einen neuen Namen erstellen (ggf. später umbenennen) und den Modulnamen in MAX_Temperature ändern.<br>
+		Danach bitte dieses Device löschen.<br>
+		Das alte Modul kann aus dem Updateprozess entfernt werden mit:<br>
+		update delete https://raw.githubusercontent.com/bismosa/FHEM/master/controls_MAX_Temperatur.txt<br>
+		</b><br>
 		<p>Dieses Modul erweitert die Heizkörpersteuerung MAX um weitere Einstellmöglichkeiten.<br>
 		Möglichkeiten:<br>
 		- Setzen der Temperatur für ein oder mehrere Heizkörperthermostate.<br>
