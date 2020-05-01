@@ -52,7 +52,7 @@ my @BlitzerPOIS;
 
 my @Werte=("display_name","house_number","road","suburb","city_district","city","postcode","country","country_code","town","village","building");
 my @WerteVL=("backend","confirm_date","content","counter","create_date","distance","distanceShort","gps_status","id","info","lat","lat_s","lng","lng_s","polyline","street","type","vmax","MapLink");
-
+my $Blitzer_Error_nominatim = 0;
 #####################################
 sub Blitzer_Initialize() {
 	my ($hash) = @_;
@@ -718,7 +718,12 @@ sub Blitzer_getOrteCallback($){
 	
 	# wenn ein Fehler bei der HTTP Abfrage aufgetreten ist
 	if($err ne ""){      
-		Log3 "[getBlitzerOrte]", 3, "error while requesting ".$param->{url}." - $err";   # Eintrag fürs Log
+		if ($Blitzer_Error_nominatim eq 0){
+			#Nur 1x ins Logfile schreiben
+			Log3 "[getBlitzerOrte]", 3, "error while requesting ".$param->{url}." - $err";   # Eintrag fürs Log
+			$Blitzer_Error_nominatim=1
+		}
+		Log3 "[getBlitzerOrte]", 4, "error while requesting ".$param->{url}." - $err";   # Eintrag fürs Log
 		readingsBeginUpdate($hash);
 		my $updateReading = AttrVal($name, "createUpdateReading", 0);
 		if ($updateReading == 1){
@@ -727,7 +732,9 @@ sub Blitzer_getOrteCallback($){
 		readingsBulkUpdate($hash, "Error", "error while requesting ".$param->{url}." - $err", 1);
 		readingsEndUpdate($hash, 1); 		# Notify is done by Dispatch
 		#return;
-	} 
+	} else {
+		$Blitzer_Error_nominatim=0
+	}
 	
 	Log3 $name, 5, "Blitzer: param = ".Dumper(\$param);
 	Log3 $name, 4, "Blitzer: err = $err";
