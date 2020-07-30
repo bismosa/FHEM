@@ -1,6 +1,7 @@
 Module von Bismsoa
 Alle Änderungen siehe: https://github.com/bismosa/FHEM/
 -------------------------------------------------------------
+30.07.2020 Blitzer:Wartezeit für die Standortabfrage für OSM hinzugefügt. Das aktualisieren dauert nun gewollt länger.
 01.05.2020 Blitzer:nominatim Fehler nur 1x anzeigen solange der Fehler besteht
 08.01.2020 MAX_Temperatur:ALT/DEPRATCHED! Bitte MAX_Temperature verwenden! (https://forum.fhem.de/index.php/topic,107152.0.html)
 26.11.2019 MAX_Temperatur:Kleines Bugfix(https://github.com/bismosa/FHEM/issues/1) Danke dkadioglu!
