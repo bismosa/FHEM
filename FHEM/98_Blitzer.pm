@@ -76,6 +76,7 @@ sub Blitzer_Initialize() {
 						."createCountReading:0,1 "
 						."MapWidth MapHeight MapShow:0,1 "
 						."ShowFixed:0,1 "
+						."OSMWaitTime "
 						.$readingFnAttributes;
   $hash->{FW_summaryFn}	= "Blitzer_summaryFn";          # displays html instead of status icon in fhemweb room-view
   #NEU: Nicht statt Status Icon, sondern unterhalb einblenden:
@@ -583,32 +584,70 @@ sub Blitzer_BlitzerDatenCallback($) {
 			Blitzer_CreateHTML($hash);
 		} else {
 			#Orte über Openstreetmap einlesen
+			my $index = 0;
+			my $Waittime = AttrVal($name, "OSMWaitTime", 1);
 			foreach my $item(@sorted){
-				my $Poi_lat = $item->{lat};
-				my $Poi_lng = $item->{lng};
-		
-				my $mydata;
-				$mydata->{hash}=$hash;
-				$mydata->{item}=$item;
-				
-				my $HTTPTimeout = AttrVal($name, "httpGetTimeout", 5);
-				my $param = {
-					url        => "https://nominatim.openstreetmap.org/reverse?format=json&lat=".$Poi_lat."&lon=".$Poi_lng,
-					timeout    => $HTTPTimeout,
-					method     => "GET",            # Lesen von Inhalten
-					hash       => $mydata,            # Muss gesetzt werden, damit die Callback funktion wieder $hash hat
-					header     => "User-Agent: Mozilla/1.22\r\nContent-Type: application/xml",
-					callback   =>  \&Blitzer_getOrteCallback   # Diese Funktion soll das Ergebnis dieser HTTP Anfrage bearbeiten
-				};
-				#agent: FHEM/1.0\r\nUser-Agent: FHEM/1.0\r\nAccept: application/json
-				Log3 $name, 5, "Blitzer: get param = ".Dumper(\$param);
-	
-				HttpUtils_NonblockingGet($param);      # Starten der HTTP Abfrage. Es gibt keinen Return-Code.
-				}
+				my $Temphash = {'hash' => $hash, 'item' => $item};
+				my $nexttime = gettimeofday() + ($index*$Waittime);
+				InternalTimer(gettimeofday() + ($index*$Waittime), "Blitzer_OSM_Get", $Temphash);
+				#Log3 $name, 1, "Blitzer: $nexttime";
+				$index+=1;
+				#my $Poi_lat = $item->{lat};
+				#my $Poi_lng = $item->{lng};
+				#
+				#my $mydata;
+				#$mydata->{hash}=$hash;
+				#$mydata->{item}=$item;
+				#
+				#my $HTTPTimeout = AttrVal($name, "httpGetTimeout", 5);
+				#my $param = {
+				#	url        => "https://nominatim.openstreetmap.org/reverse?format=json&lat=".$Poi_lat."&lon=".$Poi_lng,
+				#	timeout    => $HTTPTimeout,
+				#	method     => "GET",            # Lesen von Inhalten
+				#	hash       => $mydata,            # Muss gesetzt werden, damit die Callback funktion wieder $hash hat
+				#	header     => "User-Agent: Mozilla/1.22\r\nContent-Type: application/xml",
+				#	callback   =>  \&Blitzer_getOrteCallback   # Diese Funktion soll das Ergebnis dieser HTTP Anfrage bearbeiten
+				#};
+				##agent: FHEM/1.0\r\nUser-Agent: FHEM/1.0\r\nAccept: application/json
+				#Log3 $name, 5, "Blitzer: get param = ".Dumper(\$param);
+				#
+				#HttpUtils_NonblockingGet($param);      # Starten der HTTP Abfrage. Es gibt keinen Return-Code.
+			}
 		}
 		
 	}
 	return;
+}
+
+sub Blitzer_OSM_Get($){
+	
+	my $Temphash = shift;
+	my $hash = $Temphash->{hash};
+	my $item = $Temphash->{item};
+	my $name = $hash->{NAME};
+		
+	my $Poi_lat = $item->{lat};
+	my $Poi_lng = $item->{lng};
+	
+	
+	my $mydata;
+	$mydata->{hash}=$hash;
+	$mydata->{item}=$item;
+	#Log3 $name, 1, "Blitzer: $Poi_lat $Poi_lng ";
+				
+	my $HTTPTimeout = AttrVal($name, "httpGetTimeout", 5);
+	my $param = {
+		url        => "https://nominatim.openstreetmap.org/reverse?format=json&lat=".$Poi_lat."&lon=".$Poi_lng,
+		timeout    => $HTTPTimeout,
+		method     => "GET",            # Lesen von Inhalten
+		hash       => $mydata,            # Muss gesetzt werden, damit die Callback funktion wieder $hash hat
+		header     => "User-Agent: Mozilla/1.22\r\nContent-Type: application/xml",
+		callback   =>  \&Blitzer_getOrteCallback   # Diese Funktion soll das Ergebnis dieser HTTP Anfrage bearbeiten
+	};
+	#agent: FHEM/1.0\r\nUser-Agent: FHEM/1.0\r\nAccept: application/json
+	Log3 $name, 5, "Blitzer: get param = ".Dumper(\$param);
+	HttpUtils_NonblockingGet($param);      # Starten der HTTP Abfrage. Es gibt keinen Return-Code.
+
 }
 
 sub Blitzer_CreateMap($){
@@ -1270,6 +1309,10 @@ sub Blitzer_translateTEXT($) {
 			<code>attr &lt;Blitzer-Dezvice&gt; ShowFixed &lt;1|0&gt;</code><br>
             Show also fixed Speed Cameras.<br>
     </li>	
+	<li><a name="OSMWaitTime">OSMWaitTime</a><br>
+			<code>attr &lt;Blitzer-Dezvice&gt; OSMWaitTime &lt;1&gt;</code><br>
+            Waiting time. Standard 1 second.<br>
+    </li>
 	
 	
     
@@ -1535,6 +1578,10 @@ sub Blitzer_translateTEXT($) {
 			<code>attr &lt;Blitzer-Dezvice&gt; ShowFixed &lt;1|0&gt;</code><br>
             Auch die festinstallierten Blitzer anzeigen.<br>
     </li>	
+	<li><a name="OSMWaitTime">OSMWaitTime</a><br>
+			<code>attr &lt;Blitzer-Dezvice&gt; OSMWaitTime &lt;1&gt;</code><br>
+            Wartezeit der Standortabfrage bei OSM bei mehreren Blitzern. Standard 1 sekunde.<br>
+    </li>
 	    
   </ul>
   
