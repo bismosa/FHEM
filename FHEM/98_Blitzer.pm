@@ -485,7 +485,16 @@ sub Blitzer_BlitzerDatenCallback($) {
 	Log3 $name, 4, "Blitzer: err = $err";
 	Log3 $name, 4, "Blitzer: data = $data";
 	
-	my $decoded_json = decode_json( $data );
+	my $decoded_json = eval{decode_json($data)};
+	if($@){
+		Log3 $name, 2, "Blitzer: - error while request: $@";
+		readingsBeginUpdate($hash);
+		readingsBulkUpdate($hash, "status", "Error ".$err, 1);
+		readingsBulkUpdate($hash, "Error", "error while requesting ".$param->{url}." - $@", 1);
+		readingsEndUpdate($hash, 1);
+		return;
+	}
+	
 	Log3 $name, 5, "Blitzer: param = ".Dumper(\$decoded_json);
 	my $pois = $decoded_json->{'pois'};
 	Log3 $name, 5, "Blitzer: pois = ".Dumper(\$pois);
