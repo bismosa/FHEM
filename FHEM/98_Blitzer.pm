@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 15.08.2019 20:00
+# $Id: 98_Blitzer.pm 09.11.2020
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -1086,7 +1086,7 @@ sub Blitzer_translateTEXT($) {
 # Beginn der Commandref
 
 =pod
-=item [helper]
+=item helper
 =item summary Show speed cameras in Germany
 =item summary_DE Blitzer anzeigen
 =begin html
