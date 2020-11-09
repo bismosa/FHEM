@@ -1,6 +1,7 @@
-Module von Bismsoa
+Module von Bismosa
 Alle Änderungen siehe: https://github.com/bismosa/FHEM/
 -------------------------------------------------------------
+09.11.2020 Blitzer:Kleine korrektur in der Commandref
 06.11.2020 Blitzer:Errorhandling für malformed JSON-Data
 30.07.2020 Blitzer:Wartezeit für die Standortabfrage für OSM hinzugefügt. Das aktualisieren dauert nun gewollt länger.
 01.05.2020 Blitzer:nominatim Fehler nur 1x anzeigen solange der Fehler besteht
