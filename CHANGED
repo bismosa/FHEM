@@ -1,6 +1,7 @@
 Module von Bismosa
 Alle Änderungen siehe: https://github.com/bismosa/FHEM/
 -------------------------------------------------------------
+17.09.2021 Blitzer:Korrektur beim löscehn alter readings, UpdateRadius hinzu
 09.11.2020 Blitzer:Kleine korrektur in der Commandref
 06.11.2020 Blitzer:Errorhandling für malformed JSON-Data
 30.07.2020 Blitzer:Wartezeit für die Standortabfrage für OSM hinzugefügt. Das aktualisieren dauert nun gewollt länger.
