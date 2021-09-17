@@ -1,5 +1,5 @@
 #######################################################################################################################################################
-# $Id: 98_Blitzer.pm 09.11.2020
+# $Id: 98_Blitzer.pm 17.09.2021
 # 
 # Modulversion der Anleitung "Blitzer anzeigen"
 # https://forum.fhem.de/index.php/topic,90014.0.html
@@ -35,7 +35,8 @@ my %sets = (
 	"Voreinstellung_Ausgabe"     => "",
 	"_SetDemoValues"     => "noArg",
 	"_Berechne_area"     => "noArg",
-	"Update"      => "textField"
+	"Update"      => "textField",
+    "UpdateRadius" => "textField"
 	#"update"     => "noArg",
 );
 
@@ -234,6 +235,12 @@ sub Blitzer_Set($$$@) {
 		Blitzer_CreateMap($hash);
 		return;
 	}
+
+	if ($cmd eq "UpdateRadius"){
+		Blitzer_Update($hash,undef,undef,$cmd2);
+		Blitzer_CreateMap($hash);
+		return;
+	}
 	
 	if ($cmd eq "_SetDemoValues"){
 		$attr{$name}{home_latitude} = "52.518061" if( not defined( $attr{$name}{home_latitude} ) );
@@ -398,16 +405,19 @@ sub Blitzer_Update($$$$){
 	
 	$hash->{tempRadius} = undef;
 	#Neue Area berechnen, wenn Koordinaten mitgeliefert
-	if (defined($cmd3)){
-		Log3 $name, 4, "NEUE KOORDINATEN: $cmd2 $cmd3";
+	my $newRadius = AttrVal($name, "radius", 10);
+	if (defined ($cmd4)){
+		$newRadius = $cmd4;
+		$hash->{tempRadius}=$newRadius;
 		Log3 $name, 4, "NEUER RADIUS: $cmd4" if(defined ($cmd4));;
+	}
+	if (defined($cmd3)){
+		Log3 $name, 1, "NEUE KOORDINATEN: $cmd2 $cmd3";
+		
 		$hash->{tempCoord_Lat}=$cmd2;
 		$hash->{tempCoord_Long}=$cmd3;
-		my $newRadius = AttrVal($name, "radius", 10);
-		if (defined ($cmd4)){
-			$newRadius = $cmd4;
-			$hash->{tempRadius}=$newRadius;
-		}
+		
+		
 		my @Coords = Blitzer_GetCoordinates($hash, $cmd2, $cmd3, $newRadius, 45);
 		$area_topRight_latitude = $Coords[0];
 		$area_topRight_longitude = $Coords[1];
@@ -587,6 +597,18 @@ sub Blitzer_BlitzerDatenCallback($) {
 	if ($size == 0){
 		#keine Blitzer!
 		Blitzer_CreateHTML($hash);
+
+		#löschen nicht mehr benötigter readings
+		my $tmphash = $hash->{READINGS};
+		for (my $i=0;$i<=99;$i++) {
+			my $num = sprintf("%02d", $i);
+			for my $readingtodelete (keys %{$tmphash}) {
+				if($readingtodelete =~ m/^$num.*/ ){
+					readingsDelete($hash, $readingtodelete);
+				}
+			}
+		}
+
 	} else {
 		#Wenn OSM nicht benutzt werden soll
 		if ($DontUseOSM == 1){
@@ -1127,6 +1149,11 @@ sub Blitzer_translateTEXT($) {
 						and only speed cameras in the radius of the specified coordinates are shown. <br>
 						It is also possible to set a new temporary radius with new coordinates.
     </li>
+	<li><a name="Update">UpdateRadius</a><br>
+      <code>set &lt;Blitzer-Device&gt; Update &lt;radius&gt;</code><br>
+            Re-import the Blitzer with a new radius. <br>
+						Only speed cameras in the radius of the specified coordinates are shown. <br>
+    </li>
 	<li><a name="Voreinstellung_Ausgabe">Voreinstellung_Ausgabe &lt;Stadt/Land/.../...&gt; ((Preset_output <City / Country / ... / ...>)</a><br>
       <code>set &lt;Blitzer-Device&gt; Voreinstellung_Ausgabe &lt;Stadtgebiet/Landgebiet/.../...&gt;</code><br>
 						Set the default for the output. Here the attribute "Output" is adjusted.<br>
@@ -1393,6 +1420,11 @@ sub Blitzer_translateTEXT($) {
 						Werden die optionalen LAT/LONG Koordinaten mit angegeben, wird der Kartenausschnitt für den Mittelpunkt mit dem angegebenen Radius neu berechnet <br>
 						und nur Blitzer in dem Radius der angegebenen Koordinaten ausgegeben. <br>
 						Es kann auch optional ein neuer temporärer Radius mit angegeben werden.
+    </li>
+	<li><a name="Update">UpdateRadius</a><br>
+      <code>set &lt;Blitzer-Device&gt; Update &lt;radius&gt;</code><br>
+            Neu einlesen der Blitzer mit einem neuen radius. <br>
+						Nur Blitzer in dem Radius der angegebenen Koordinaten werden ausgegeben. <br>
     </li>
 	<li><a name="Voreinstellung_Ausgabe">Voreinstellung_Ausgabe &lt;Stadt/Land/.../...&gt;</a><br>
       <code>set &lt;Blitzer-Device&gt; Voreinstellung_Ausgabe &lt;Stadtgebiet/Landgebiet/.../...&gt;</code><br>
