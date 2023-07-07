@@ -34,10 +34,6 @@
 
 #- Globale Variablen größe?
 
-#- Config auf cam3 und testen!
-#- Todos
-#- Aufräumen
-
 package main;
 use strict;
 use warnings;
@@ -411,7 +407,7 @@ sub meminfo_getRamUsage { #RAM Usage in KB Windows und Linux
 	if ($^O eq 'MSWin32'){
 		my $PFU = qx("wmic process where ProcessID=$pid get PageFileUsage");
 		my @a=split(/\R/, $PFU);
-		return @a[1];
+		return $a[1];
 	} else {
 		#my $PFU = qx("ps -p $pid -o %rss");
 		my $a = "pmap $pid".' | tail -n 1 | awk \'/[0-9]/{print $2}\' | sed \'s/K//g\'';
